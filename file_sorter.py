@@ -34,14 +34,14 @@ def extract_numbers_convert(path):
                 print(f"Unexpected date format in {numbers_result}")        
         else:
             print(f"Unexpected number format in {numbers_result}")
+    return formatted_date
 
 
 
 
+# path = "/home/david/Python_Projects/Fake_A20_Bodypack/"
 
-path = "/home/david/Python_Projects/Fake_A20_Bodypack/"
+# extract_numbers_convert(path)
 
-extract_numbers_convert(path)
-global_time()
 
 

@@ -1,10 +1,7 @@
 import os
 import shutil
 import re
-from tkinter import messagebox, filedialog
-from typing import List
-
-
+from tkinter import filedialog
 
 # select folder
 def select_folder_path():
@@ -12,13 +9,10 @@ def select_folder_path():
     print(folder_path)
     return folder_path 
 
-
 def select_A20_path():
     A20_path: str = filedialog.askdirectory(initialdir="home", title="please select your A20 pack")
     print(A20_path)
     return A20_path
-
-
 
 def move_files(A20_path, folder_path, update_progress_callback=None):
     if A20_path and folder_path:
@@ -39,13 +33,6 @@ def move_files(A20_path, folder_path, update_progress_callback=None):
                     print(f"moved file: {file} to folder: {folder}")
                     if update_progress_callback:
                         update_progress_callback(moved_files / total_files)
-
-
-
-    
-
-
-
 
 
 # selectPaths()
