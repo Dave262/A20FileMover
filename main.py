@@ -24,7 +24,7 @@ class App(ctk.CTk):
 
 # Heading
 
-        frame_header = ctk.CTkFrame(self)
+        frame_header = ctk.CTkFrame(self, fg_color=style_sheet.BLUE)
         frame_header.grid(row=0, columnspan=3, padx=5, pady=5, sticky="nswe")
         
         self.label_heading =ctk.CTkLabel(frame_header)
@@ -37,26 +37,18 @@ class App(ctk.CTk):
         self.time_heading.pack(side="right", padx=10)
         self.time_heading.configure(text=f"{current_time}", font=("Inclusive Sans", 15))
         
-        frame_left = ctk.CTkFrame(self, fg_color=style_sheet.BACKGROUND_DARK)
+        frame_left = ctk.CTkFrame(self, fg_color=style_sheet.BACKGROUND_COLOR)
         frame_left.grid(row=1, column=0, rowspan=2, padx=5, pady=5, sticky="nswe")
+        frame_left.configure(border_width=1, border_color=style_sheet.YELLOW)
 
-        frame_middle = ctk.CTkFrame(self)
+        frame_middle = ctk.CTkFrame(self, fg_color=style_sheet.BACKGROUND_COLOR)
         frame_middle.grid(row=1, column=1, rowspan=2, padx=5, pady=5, sticky="nswe")
+        frame_middle.configure(border_width=1, border_color=style_sheet.YELLOW)
 
-        frame_right = ctk.CTkFrame(self)
+        frame_right = ctk.CTkFrame(self, fg_color=style_sheet.BACKGROUND_DARK)
         frame_right.grid(row=1, column=2, rowspan=2, padx=5, pady=5, sticky="nswe")
+        frame_right.configure(border_width=1, border_color=style_sheet.YELLOW)
         
-
-        
-        # frame_right.grid_rowconfigure(0, weight=1)
-        # frame_right.grid_rowconfigure(1, weight=0)
-        # frame_right.grid_columnconfigure((0, 1), weight=1)
-
-        # subframe_right_L = ctk.CTkFrame(frame_right)
-        # subframe_right_L.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
-
-        # subframe_right_R = ctk.CTkFrame(frame_right)
-        # subframe_right_R.grid(row=0, column=1, sticky="nswe", padx=5, pady=5)
         
 
         button_select_folder = ctk.CTkButton(frame_left, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
@@ -72,7 +64,7 @@ class App(ctk.CTk):
         self.textbox_dir_list = ctk.CTkTextbox(frame_left, height=300, wrap=ctk.WORD)
         self.textbox_dir_list.pack(fill="x", expand=True, pady=10, padx=20)
         self.textbox_dir_list.insert("1.0", "No folder selected") # placeholder text
-        self.textbox_dir_list.configure(border_width=1, border_color=style_sheet.YELLOW)
+        self.textbox_dir_list.configure(border_width=1, border_color=style_sheet.OFF_WHITE)
 
 #A20 Files
         
@@ -86,7 +78,7 @@ class App(ctk.CTk):
         self.textbox_A20_list = ctk.CTkTextbox(frame_middle, height=300)
         self.textbox_A20_list.pack(fill="x", expand=True, pady=10, padx=20)
         self.textbox_A20_list.insert("1.0", "No A20 selected") # placeholder text
-        self.textbox_A20_list.configure(border_width=1, border_color=style_sheet.YELLOW)
+        self.textbox_A20_list.configure(border_width=1, border_color=style_sheet.OFF_WHITE)
 
 
         button_move_files = ctk.CTkButton(frame_right, text="Move Files to Folders", command=self.call_move_files)
@@ -98,7 +90,7 @@ class App(ctk.CTk):
 
         self.progressbar = ctk.CTkProgressBar(frame_right)
         self.progressbar.pack(padx=10, pady=10)
-        self.progressbar.configure(fg_color=style_sheet.BACKGROUND_DARK, progress_color=style_sheet.OFF_WHITE)
+        self.progressbar.configure(fg_color=style_sheet.ORANGE, progress_color=style_sheet.OFF_WHITE)
         self.progressbar.set(0)
 
     
@@ -111,7 +103,9 @@ class App(ctk.CTk):
         if self.A20_path:
             file_list = os.listdir(self.A20_path)  
             self.textbox_A20_list.delete("1.0", "end")
-            self.textbox_A20_list.insert("end",text=f"--------------- PATH ---------\n{self.folder_path}\n\n\n ------------- FOLDERS ---------\n")
+            self.textbox_A20_list.insert("end",
+                                         text=f"--------------- PATH ---------\n{self.folder_path}\n\n\n ------------- FOLDERS ---------\n"
+                                         )
             self.textbox_A20_list.delete("1.0", "end")
             for file in file_list:
                 self.textbox_A20_list.insert("end", file + "\n")
@@ -124,7 +118,9 @@ class App(ctk.CTk):
         if self.folder_path:
             folder_list = os.listdir(self.folder_path)
             self.textbox_dir_list.delete("1.0", "end")
-            self.textbox_dir_list.insert("end",text=f"----------------- PATH --------------\n\n{self.folder_path}\n\n\n --------------- FOLDERS ------------\n")
+            self.textbox_dir_list.insert("end",
+                                         text=f"----------------- PATH --------------\n\n{self.folder_path}\n\n --------------- FOLDERS ------------\n"
+                                         )
             for folder in folder_list:
                 full_path = os.path.join(self.folder_path, folder)
                 if os.path.isdir(full_path):
