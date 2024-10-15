@@ -10,12 +10,9 @@ ctk.set_default_color_theme("blue")
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-
-        self._controller = MainController() 
-
+        self._controller = MainController() # setting up instance of MainCOntroller to call functions
         # self._controller: Union[MainController, None] =None
-
-        self.geometry("900x500")
+        self.geometry("1000x500")
         self.title("A20 TX File Mover")
 
         self.grid_rowconfigure((0), weight=0)
@@ -52,8 +49,6 @@ class App(ctk.CTk):
         frame_right.grid(row=1, column=2, rowspan=2, padx=5, pady=5, sticky="nswe")
         frame_right.configure(border_width=1, border_color=Colour.BACKGROUND_DARK.value)
         
-        
-
         button_select_folder = ctk.CTkButton(frame_left, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
         button_select_folder.pack(pady=20)
 
@@ -95,38 +90,28 @@ class App(ctk.CTk):
         self.progressbar.set(0)
 
     
-    updated_date = MainController.extract_numbers_convert
+    updated_date = MainController.A20_convert_name
     
     def update_textbox_with_A20_path(self):
-        self.A20_path = self._controller.select_A20_path()
-        # self.label_A20_path.configure(text=f"A20 Folder: {self.A20_path}")
-
-        if self.A20_path:
-            file_list = os.listdir(self.A20_path)  
+            path = self._controller.select_A20_path()
+            new_names = self._controller.A20_convert_name(path)
             self.textbox_A20_list.delete("1.0", "end")
-            self.textbox_A20_list.insert("end",
-                                         text=f"--------------- PATH ---------\n{self.folder_path}\n\n\n ------------- FOLDERS ---------\n"
-                                         )
-            self.textbox_A20_list.delete("1.0", "end")
-            for file in file_list:
-                self.textbox_A20_list.insert("end", file + "\n")
+            for name in new_names:
+                self.textbox_A20_list.insert("end", name + "\n")
 
 
     def update_textbox_with_folder_path(self):
         self.folder_path = self._controller.select_folder_path()
-        # self.label_dir_path.configure(text=f"Destination Folder: {self.folder_path}")
-
         if self.folder_path:
             folder_list = os.listdir(self.folder_path)
             self.textbox_dir_list.delete("1.0", "end")
             self.textbox_dir_list.insert("end",
-                                         text=f"----------------- PATH --------------\n\n{self.folder_path}\n\n --------------- FOLDERS ------------\n"
+                                         text=f"PATH:\n\n{self.folder_path}\n\nFOLDERS:\n"
                                          )
             for folder in folder_list:
                 full_path = os.path.join(self.folder_path, folder)
                 if os.path.isdir(full_path):
                     self.textbox_dir_list.insert("end", folder + "\n")
-
         
     def update_progress(self, progress):
         self.progressbar.set(progress)
@@ -137,7 +122,6 @@ class App(ctk.CTk):
             self._controller.move_files(self.A20_path, self.folder_path, self.update_progress)
         else:
             print("Please select both paths before moving files.")
- 
 
 app = App()
 app.mainloop()
