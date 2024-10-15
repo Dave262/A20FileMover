@@ -1,0 +1,4 @@
+## please install the following
+
+customtkinter==5.2.1 
+tkinterdnd2-universal==2.9.3
