@@ -5,7 +5,7 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
 
-class DriveController:
+class LinuxDeviceHandler:
     def __init__(self):
         super().__init__()
         self.destination_dir = None
@@ -69,7 +69,7 @@ class DriveController:
         
 
 if __name__ == "__main__":
-    controller = DriveController()
+    controller = LinuxDeviceHandler()
     # devices = controller.update_drive_list()
 
    

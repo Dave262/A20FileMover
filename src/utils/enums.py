@@ -5,8 +5,7 @@ class Colour(Enum):
     """
         Gruvbox theme with hex colours
     """
-
-
+    
     BACKGROUND_COLOR = "#3c3836"
     BACKGROUND_DARK = "#1d2021"
     PINK = "#86592d"             
@@ -20,3 +19,5 @@ class Colour(Enum):
     ORANGE = "#af3a03"
     RED = "#9d0006"
     NORD = "#292e39"
+
+

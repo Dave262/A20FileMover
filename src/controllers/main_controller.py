@@ -19,7 +19,7 @@ class MainController:
         time_object = time.localtime()
     
         local_time = time.strftime("%B %d %Y - %H:%M:%S", time_object)
-        print(local_time)
+        # print(local_time)
         return local_time
 
     def select_folder_path(self):
@@ -90,5 +90,7 @@ class MainController:
 if __name__ == "__main__":
     controller = MainController()
     # controller.select_folder_path
-    selected_path = controller.select_A20_path()
-    controller.A20_convert_name(selected_path)
+    # selected_path = controller.select_A20_path()
+    # controller.A20_convert_name(selected_path)
+    current_time = controller.global_time()
+    print(current_time)

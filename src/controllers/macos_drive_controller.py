@@ -2,7 +2,7 @@ import psutil
 import usb.core
 import usb.util
 
-class UsbDeviceHandler:
+class MacUsbDeviceController:
     def __init__(self):
         super().__init__()
 
