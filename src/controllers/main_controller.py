@@ -54,9 +54,7 @@ class MainController:
                         if update_progress_callback:
                             update_progress_callback(moved_files / total_files)
 
-
-
-# Function that strips all characters form the file string and returns a readable date from the number suffix
+    # Function that strips all characters form the file string and returns a readable date from the number suffix
 
     def A20_convert_name(self, path) -> list[str]:
         """
@@ -87,6 +85,11 @@ class MainController:
             else:
                 print(f"Unexpected number format in {numbers_result}")
         return new_names
+
+  
+    
+
+
 
 if __name__ == "__main__":
     controller = MainController()
