@@ -87,10 +87,6 @@ class MainController:
         return new_names
 
   
-    
-
-
-
 if __name__ == "__main__":
     controller = MainController()
     # controller.select_folder_path

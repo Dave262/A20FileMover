@@ -19,3 +19,4 @@ class Colour(Enum):
     GREEN = "#98971a"
     ORANGE = "#af3a03"
     RED = "#9d0006"
+    NORD = "#292e39"
