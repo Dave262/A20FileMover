@@ -140,12 +140,13 @@ class App(ctk.CTk):
             self.after(5000, self._usb_controller.list_drives)
                 
     def handle_drive_selection(self, device_node):
-        
-            tx_contents = os.listdir(device_node)
-            self.A20_textbox.delete("1.0", "end") 
-            for item in tx_contents:
-                self.A20_textbox.insert("end", item + "\n")
-            print(f"Selected drive: {device_node}")
+        tx_contents = os.listdir(device_node)
+        # Convert the file names using the A20_convert_name method
+        converted_names = self._controller.A20_convert_name(device_node)
+        self.A20_textbox.delete("1.0", "end") 
+        for name in converted_names:
+            self.A20_textbox.insert("end", name + "\n")
+        print(f"Selected drive: {device_node}")
 
     def update_progress(self, progress):
         self.progressbar.set(progress)
