@@ -37,7 +37,7 @@ class MacUsbDeviceController:
         return drives_info  # Return the filtered list of unique drives
 
 if __name__ == "__main__":
-    usb_controller = UsbDeviceHandler()
+    usb_controller = MacUsbDeviceController()
     drives = usb_controller.list_drives()  # Call the method
     print("Detected USB drives:")
     for drive in drives:
