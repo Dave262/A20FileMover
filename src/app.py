@@ -32,7 +32,7 @@ class App(ctk.CTk):
         system_get = SystemGet()
         system_platform = system_get.system_trigger()
 
-        if system_platform == "darwin":
+        if system_platform == "Darwin":
             self._usb_controller = MacUsbDeviceController()
         elif system_platform == "Linux":
             self._usb_controller  = LinuxDeviceHandler()
