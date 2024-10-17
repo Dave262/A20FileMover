@@ -10,7 +10,7 @@ class LinuxDeviceHandler:
         super().__init__()
         self.destination_dir = None
         # self.drive_buttons = {} 
-        self.update_drive_list()
+        self.list_drives()
 
 
     def select_destination(self):
@@ -45,27 +45,33 @@ class LinuxDeviceHandler:
                         print(f"Found device with VID {vid} at {mount_point} ({child.device_node})")
         return devices
 
-    def update_drive_list(self, update_ui_callback=None):
+    def list_drives(self, update_ui_callback=None):
         """
         get a list of all mounted drives
         """
-        tx_devices = self.get_VID()
-        new_drives = set(device['device_node'] for device in tx_devices)
+        drives_info = []
+        drives = self.get_VID()
+        # new_drives = set(device['device_node'] for device in drives)
 
-        for device in tx_devices:
-            device_node = device['device_node']
-            mount_point = device['mount_point']
+        for drive in drives:
+            device_node = drive['device_node']
+            mount_point = drive['mount_point']
             if mount_point is not None:
-                drive_label = os.path.basename(mount_point)
-                print(f"{drive_label}:{tx_devices}")
+                name = os.path.basename(mount_point)
+                drives_info.append({
+                    'name' : name,
+                    'vid' : "some vid",
+                    'mountpoint' : mount_point
+                })
+                print(f"{name}:{drives}")
 
             else:
                 print(f"Warning: No mount point found for device {device_node}")
         
         if update_ui_callback:
-            update_ui_callback(tx_devices)
+            update_ui_callback(drives)
 
-        return tx_devices
+        return drives_info
         
 
 if __name__ == "__main__":

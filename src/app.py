@@ -6,6 +6,8 @@ from typing import Union, Callable
 from utils.enums import Colour
 from controllers.main_controller import MainController
 from controllers.macos_drive_controller import MacUsbDeviceController
+from controllers.linux_drive_controller import LinuxDeviceHandler
+from utils.system_get import SystemGet
 
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
@@ -26,9 +28,23 @@ class App(ctk.CTk):
         self.geometry("1000x500")
         self.title("A20 TX File Mover")
         
+
+        system_get = SystemGet()
+        system_platform = system_get.system_trigger()
+
+        if system_platform == "darwin":
+            self._usb_controller = MacUsbDeviceController()
+        elif system_platform == "Linux":
+            self._usb_controller  = LinuxDeviceHandler()
+        else:
+            raise Exception(f"Unsupported platform: {system_platform}")
+
+
+
+
         # init controllers
         self._controller = MainController()
-        self._usb_controller = MacUsbDeviceController()   
+        # self._usb_controller = MacUsbDeviceController()   
          
 
         self.grid_rowconfigure((0), weight=0)
@@ -67,8 +83,8 @@ class App(ctk.CTk):
         self.frame_right.grid(row=1, column=2, rowspan=2, padx=1, pady=1, sticky="nswe")
         self.frame_right.configure(border_width=1, border_color=Colour.BACKGROUND_DARK.value)
         
-        self.folder_path_select = ctk.CTkButton(self.frame_middle, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
-        self.folder_path_select.pack(pady=20)
+        # self.folder_path_select = ctk.CTkButton(self.frame_middle, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
+        # self.folder_path_select.pack(pady=20)
 
 # Textbox for folder path
 
@@ -117,18 +133,18 @@ class App(ctk.CTk):
             for name in new_names:
                 self.A20_textbox.insert("end", name + "\n")
 
-    def update_textbox_with_folder_path(self):
-        self.folder_path = self._controller.select_folder_path()
-        if self.folder_path:
-            folder_list = os.listdir(self.folder_path)
-            self.folder_textbox.delete("1.0", "end")
-            self.folder_textbox.insert("end",
-                                         text=f"PATH:\n\n{self.folder_path}\n\nFOLDERS:\n"
-                                         )
-            for folder in folder_list:
-                full_path = os.path.join(self.folder_path, folder)
-                if os.path.isdir(full_path):
-                    self.folder_textbox.insert("end", folder + "\n")
+    # def update_textbox_with_folder_path(self):
+    #     self.folder_path = self._controller.select_folder_path()
+    #     if self.folder_path:
+    #         folder_list = os.listdir(self.folder_path)
+    #         self.folder_textbox.delete("1.0", "end")
+    #         self.folder_textbox.insert("end",
+    #                                      text=f"PATH:\n\n{self.folder_path}\n\nFOLDERS:\n"
+    #                                      )
+    #         for folder in folder_list:
+    #             full_path = os.path.join(self.folder_path, folder)
+    #             if os.path.isdir(full_path):
+    #                 self.folder_textbox.insert("end", folder + "\n")
 
     def update_drives(self, tx_info=None):
         if tx_info is None:
