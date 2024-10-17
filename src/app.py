@@ -40,8 +40,6 @@ class App(ctk.CTk):
             raise Exception(f"Unsupported platform: {system_platform}")
 
 
-
-
         # init controllers
         self._controller = MainController()
         # self._usb_controller = MacUsbDeviceController()   
@@ -86,22 +84,30 @@ class App(ctk.CTk):
         # self.folder_path_select = ctk.CTkButton(self.frame_middle, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
         # self.folder_path_select.pack(pady=20)
 
-# Textbox for folder path
+# Folder Stuff
 
-        # self.folder_textbox = ctk.CTkTextbox(self.frame_middle, height=300, wrap=ctk.WORD)
-        # self.folder_textbox.pack(fill="x", expand=True, pady=10, padx=20)
-        # self.folder_textbox.insert("1.0", "No folder selected") # placeholder text
-        # self.folder_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
+        self.folder_path_button = ctk.CTkButton(self.frame_middle, text="Choose Destination", command=self.update_label_with_folder_path)
+        self.folder_path_button.pack(pady=20)
+        self.folder_path_button.configure(fg_color=Colour.ORANGE.value)
+
+
+        self.folder_label = ctk.CTkLabel(self.frame_middle)
+        self.folder_label.pack(fill="x", expand=True, pady=10, padx=20)
+        self.folder_label.configure(text="Placeholder Folder Ha!", font=("Inclusive Sans", 15))
+
+
+
+
 
 # Manually select path to A20 mount
 
-        self.A20_path_select = ctk.CTkButton(self.frame_left, text="Manually Choose A20", command=self.update_textbox_with_A20_path)
-        self.A20_path_select.pack(pady=20)
-        self.A20_path_select.configure(fg_color=Colour.ORANGE.value)
+        self.A20_path_button = ctk.CTkButton(self.frame_left, text="Manually Choose A20", command=self.update_textbox_with_A20_path)
+        self.A20_path_button.pack(pady=20)
+        self.A20_path_button.configure(fg_color=Colour.ORANGE.value)
 
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
         self.A20_instance_frame.pack(side="bottom", fill="both", pady=10, padx=10, ipady=300)
-        self.A20_instance_frame.configure(fg_color=Colour.BACKGROUND_DARK.value, border_width=1, border_color=Colour.OFF_WHITE.value)
+        self.A20_instance_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value, border_width=1, border_color=Colour.OFF_WHITE.value)
         
         self.A20_instance_label = ctk.CTkLabel(self.A20_instance_frame)
         self.A20_instance_label.pack(padx=5, pady=5)
@@ -109,7 +115,7 @@ class App(ctk.CTk):
         
         self.A20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
         self.A20_textbox.pack(side= "bottom", fill="x", expand=True, pady=10, padx=20)
-        self.A20_textbox.insert("2.0", "No A20 selected") # placeholder text
+        self.A20_textbox.insert("2.0", "You're files will display here...") # placeholder text
         self.A20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
 
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
@@ -133,18 +139,17 @@ class App(ctk.CTk):
             for name in new_names:
                 self.A20_textbox.insert("end", name + "\n")
 
-    # def update_textbox_with_folder_path(self):
-    #     self.folder_path = self._controller.select_folder_path()
-    #     if self.folder_path:
-    #         folder_list = os.listdir(self.folder_path)
-    #         self.folder_textbox.delete("1.0", "end")
-    #         self.folder_textbox.insert("end",
-    #                                      text=f"PATH:\n\n{self.folder_path}\n\nFOLDERS:\n"
-    #                                      )
-    #         for folder in folder_list:
-    #             full_path = os.path.join(self.folder_path, folder)
-    #             if os.path.isdir(full_path):
-    #                 self.folder_textbox.insert("end", folder + "\n")
+    def update_label_with_folder_path(self):
+        self.folder_path = self._controller.select_folder_path()
+        if self.folder_path:
+            folder_list = os.listdir(self.folder_path)
+            # self.folder_label.delete("1.0", "end")
+            self.folder_label.configure(text=f"PATH:\n{self.folder_path}", font=("Inclusive Sans", 15))
+                                          
+            # for folder in folder_list:
+            #     full_path = os.path.join(self.folder_path, folder)
+            #     if os.path.isdir(full_path):
+            #         self.folder_label.insert("end", folder + "\n")
 
     def update_drives(self, tx_info=None):
         if tx_info is None:
