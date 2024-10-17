@@ -8,6 +8,8 @@ from controllers.main_controller import MainController
 from controllers.macos_drive_controller import MacUsbDeviceController
 from controllers.linux_drive_controller import LinuxDeviceHandler
 from utils.system_get import SystemGet
+from controllers.mac_usb_controller_v1 import MacUsbControlerV1
+
 
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
@@ -33,7 +35,7 @@ class App(ctk.CTk):
         system_platform = system_get.system_trigger()
 
         if system_platform == "Darwin":
-            self._usb_controller = MacUsbDeviceController()
+            self._usb_controller = MacUsbControlerV1()
         elif system_platform == "Linux":
             self._usb_controller  = LinuxDeviceHandler()
         else:
@@ -127,7 +129,7 @@ class App(ctk.CTk):
         self.progressbar.pack(padx=10, pady=10)
         self.progressbar.configure(fg_color=Colour.ORANGE.value, progress_color=Colour.OFF_WHITE.value)
         self.progressbar.set(0)
-
+        
         self.drive_buttons = {}
     
     updated_date = MainController.A20_convert_name
@@ -146,12 +148,9 @@ class App(ctk.CTk):
             # self.folder_label.delete("1.0", "end")
             self.folder_label.configure(text=f"PATH:\n{self.folder_path}", font=("Inclusive Sans", 15))
                                           
-            # for folder in folder_list:
-            #     full_path = os.path.join(self.folder_path, folder)
-            #     if os.path.isdir(full_path):
-            #         self.folder_label.insert("end", folder + "\n")
 
     def update_drives(self, tx_info=None):
+        
         if tx_info is None:
             tx_info = self._usb_controller.list_drives()
 
@@ -160,16 +159,16 @@ class App(ctk.CTk):
             button.destroy()
         self.drive_buttons.clear()        
         for drive_info in tx_info:
-            drive_name = drive_info['name']  # Assuming 'name' is the key for the drive name
-            device_node = drive_info['mountpoint']  # Assuming you have a unique identifier for each drive
-
+            drive_name: str = drive_info.get('mountpoint')  
+            device_node: str = drive_info.get('mountpoint')  
+            drive_label: str = drive_name.replace("/Volumes/","")  # strips out just the name label
             # Create a new button
-            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {drive_name}", command=lambda dn=device_node: self.handle_drive_selection(dn))
+            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {drive_label}", command=lambda dn=device_node: self.handle_drive_selection(dn))
             button.pack(pady=10)  # Adjust layout as needed       
 
             # Store the button in the dictionary for future reference
             self.drive_buttons[device_node] = button 
-            self.after(5000, self._usb_controller.list_drives)
+        self.after(5000, self._usb_controller.list_drives)
                 
     def handle_drive_selection(self, device_node):
         # Convert the file names using the A20_convert_name method
