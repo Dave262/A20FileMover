@@ -9,13 +9,17 @@ class MacUsbControlerV1:
     def list_drives(self):
         """
         Analyses all drives on the system and returns a list of dictionaries containing info for each 'exfat' drive.
-        :return: list_of_drives
+        Also give a True/False as to if exfat drives are present.
+        :return: list of drives
+
         """
+        exfat_present = False
         list_of_drives = []
         system_drives = psutil.disk_partitions()
 
         for exfat_drive in system_drives:
             if exfat_drive.fstype == "exfat":
+                exfat_present = True
                 drive_info = {
                     'device': exfat_drive.device,
                     'mountpoint': exfat_drive.mountpoint,
@@ -33,10 +37,13 @@ class MacUsbControlerV1:
                 list_of_drives.append(drive_info)
 
         if list_of_drives:
+            print(f"Exfat present: {exfat_present}")
             print(list_of_drives)
+            
             return list_of_drives
         else:
-            print("No exfat drives found")
+            print(f"Exfat present: {exfat_present}")
+            print("No exfat drives found")     
             return []
 
 if __name__ == "__main__":

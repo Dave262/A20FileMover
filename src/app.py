@@ -14,7 +14,6 @@ from controllers.mac_usb_controller_v1 import MacUsbControlerV1
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
 
-
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -54,7 +53,7 @@ class App(ctk.CTk):
         self.A20_path = ""
         self.folder_path = ""
         self.create_layout()
-        self.update_drives()
+        self.create_tx_buttons()
 
 # Heading
     def create_layout(self):
@@ -103,7 +102,7 @@ class App(ctk.CTk):
 
 # Manually select path to A20 mount
 
-        self.A20_path_button = ctk.CTkButton(self.frame_left, text="Manually Choose A20", command=self.update_textbox_with_A20_path)
+        self.A20_path_button = ctk.CTkButton(self.frame_left, text="Manually Choose A20", command=self.manual_a20_sel_to_textbox)
         self.A20_path_button.pack(pady=20)
         self.A20_path_button.configure(fg_color=Colour.ORANGE.value)
 
@@ -134,53 +133,93 @@ class App(ctk.CTk):
     
     updated_date = MainController.A20_convert_name
     
-    def update_textbox_with_A20_path(self):
+    
+    
+    
+    
+
+    
+    
+    def manual_a20_sel_to_textbox(self):
+            """_summary_
+            passes the contents of a manually selected drive through the file renamer to the a20 textbox
+            """
+            
             path = self._controller.select_A20_path()
             new_names = self._controller.A20_convert_name(path)
             self.A20_textbox.delete("1.0", "end")
             for name in new_names:
                 self.A20_textbox.insert("end", name + "\n")
 
+    
+    
+    
+    
+    
+    
     def update_label_with_folder_path(self):
+        
         self.folder_path = self._controller.select_folder_path()
         if self.folder_path:
             folder_list = os.listdir(self.folder_path)
-            # self.folder_label.delete("1.0", "end")
+    # self.folder_label.delete("1.0", "end")
             self.folder_label.configure(text=f"PATH:\n{self.folder_path}", font=("Inclusive Sans", 15))
                                           
 
-    def update_drives(self, tx_info=None):
+    
+    
+    
+
+    
+    
+    def create_tx_buttons(self, tx_info=None):
         
         if tx_info is None:
             tx_info = self._usb_controller.list_drives()
 
-        # Clear existing drive buttons
+    # Clear existing drive buttons
         for button in self.drive_buttons.values():
             button.destroy()
         self.drive_buttons.clear()        
         for drive_info in tx_info:
-            drive_name: str = drive_info.get('mountpoint')  
-            device_node: str = drive_info.get('mountpoint')  
-            drive_label: str = drive_name.replace("/Volumes/","")  # strips out just the name label
-            # Create a new button
-            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {drive_label}", command=lambda dn=device_node: self.handle_drive_selection(dn))
+            a20_mount_point: str = drive_info.get('mountpoint')  
+
+            a20_drive_label: str = a20_mount_point.replace("/Volumes/","")  # strips out just the name label
+    # Create a new button
+            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {a20_drive_label}", command=lambda mount_point=a20_mount_point: self.handle_drive_selection(mount_point))
             button.pack(pady=10)  # Adjust layout as needed       
 
-            # Store the button in the dictionary for future reference
-            self.drive_buttons[device_node] = button 
+    # Store the button in the dictionary for future reference
+            self.drive_buttons[a20_mount_point] = button 
         self.after(5000, self._usb_controller.list_drives)
                 
-    def handle_drive_selection(self, device_node):
-        # Convert the file names using the A20_convert_name method
-        converted_names = self._controller.A20_convert_name(device_node)
-        self.A20_textbox.delete("1.0", "end") 
-        for name in converted_names:
-            self.A20_textbox.insert("end", name + "\n")
-        print(f"Selected drive: {device_node}")
+    
+    
+    def handle_drive_selection(self, a20_mount_point):
+    # Convert the file names using the A20_convert_name method
+     
+        if a20_mount_point:
+            try:
+                converted_names = self._controller.A20_convert_name(a20_mount_point)
+                self.A20_textbox.delete("1.0", "end") 
+                for name in converted_names:
+                    self.A20_textbox.insert("end", name + "\n")
+                print(f"Selected drive: {a20_mount_point}")
+            except ValueError:
+                print("Couldn't load a20 mount pointt")
+        
 
+    
+
+    
+    
     def update_progress(self, progress):
         self.progressbar.set(progress)
 
+    
+    
+    
+    
     def call_move_files(self):
         
         if self.A20_path and self.folder_path:
