@@ -5,6 +5,9 @@ from tkinter import filedialog
 import time
 from datetime import datetime
 from typing import Union, Callable
+import wavinfo
+from wavinfo import WavInfoReader
+from mac_usb_controller_v1 import MacUsbControlerV1
 
 class MainController:
     def __init__(self):
@@ -105,11 +108,41 @@ class MainController:
 
     
 
+
+
+
+      
+
+    def give_list_of_attributes_for_tx_files(self):
+        self._usb_controller = MacUsbControlerV1()
+        
+        tx_path = self._usb_controller.list_drives()
+        print(tx_path)
+        
+        for mount_pount in tx_path:    
+            a20_mount_point = mount_pount.get('mountpoint')
+            print(f"mount = {a20_mount_point}")  
+            
+ 
+        for index, file in enumerate(os.listdir(a20_mount_point), start=1):
+            file_path = os.path.join(a20_mount_point, file)
+            
+            if not file_path.endswith(".wav"):
+                print(f"Skipping non-WAV file: {file}")
+                continue
+            try:
+                info = WavInfoReader(file_path)
+                fmt_info = info.fmt
+                if fmt_info:
+                    print(f"{index}_{file} - bit depth: {fmt_info.bits_per_sample} - sample rate: {fmt_info.sample_rate}")    
+            except wavinfo.riff_parser.WavInfoEOFError:
+                print(f"EOF error encountered while reading {file_path}. The file may be corrupted or incomplete.")
+            except Exception as e:
+                print(f"Error reading {file_path}: {e}")
+
   
 if __name__ == "__main__":
     controller = MainController()
-    # controller.select_folder_path
-    # selected_path = controller.select_A20_path()
-    # controller.A20_convert_name(selected_path)
     current_time = controller.global_time()
-    print(current_time)
+    wav_info = controller.give_list_of_attributes_for_tx_files()
+    print(f"The time is: {current_time}")

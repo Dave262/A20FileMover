@@ -10,7 +10,6 @@ from controllers.linux_drive_controller import LinuxDeviceHandler
 from utils.system_get import SystemGet
 from controllers.mac_usb_controller_v1 import MacUsbControlerV1
 
-
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
 
@@ -95,8 +94,6 @@ class App(ctk.CTk):
         self.folder_label = ctk.CTkLabel(self.frame_middle)
         self.folder_label.pack(fill="x", expand=True, pady=10, padx=20)
         self.folder_label.configure(text="Placeholder Folder Ha!", font=("Inclusive Sans", 15))
-
-
 
 
 
