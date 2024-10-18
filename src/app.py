@@ -1,9 +1,6 @@
 from typing import Union
 
 import customtkinter as ctk
-import os
-import threading
-import time
 from typing import Union, Callable
 from utils.enums import Colour
 from controllers.main_controller import MainController
@@ -45,7 +42,6 @@ class App(ctk.CTk):
         # init controllers
         self._controller = MainController()
         # self._usb_controller = MacUsbDeviceController()   
-         
 
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=1)
@@ -89,25 +85,10 @@ class App(ctk.CTk):
 
 # Folder Stuff
 
-
-
-
-        self.folder_label = ctk.CTkLabel(self.frame_right)
+        self.folder_label = ctk.CTkTextbox(self.frame_right, height=50, fg_color="transparent")
         self.folder_label.pack(fill="x", pady=10, padx=20)
-        self.folder_label.configure(text="Placeholder Folder Ha!", font=("Inclusive Sans", 15))
+        self.folder_label.insert("0.0", "Placeholder Folder Ha!")
 
-
-
-# Manually select path to A20 mount
-
-
-
-
-
-
-        
-
-        
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
         self.A20_instance_frame.pack(side="top", pady=1, padx=1)
         self.A20_instance_frame.configure(fg_color="transparent", border_width=2, border_color=Colour.OFF_WHITE.value)
@@ -115,8 +96,6 @@ class App(ctk.CTk):
         self.A20_instance_label = ctk.CTkLabel(self.A20_instance_frame)
         self.A20_instance_label.pack(padx=5, pady=5)
         self.A20_instance_label.configure(text="Transmitter List", font=("Inclusive Sans", 20))
-        
-
 
 
 
@@ -130,18 +109,41 @@ class App(ctk.CTk):
         
         self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_a20_sel_to_textbox)
         self.A20_path_button.pack(pady=10)
-        self.A20_path_button.configure(fg_color=Colour.ORANGE.value)
+        self.A20_path_button.configure(fg_color=Colour.PINK.value)
         
         
         self.folder_path_button = ctk.CTkButton(self.options_frame, text="Choose Destination", command=self.update_label_with_folder_path)
         self.folder_path_button.pack(pady=10)
-        self.folder_path_button.configure(fg_color=Colour.ORANGE.value)  
+        self.folder_path_button.configure(fg_color=Colour.PINK.value)  
+        
+        
+        
+        self.options_label = ctk.CTkLabel(self.frame_middle)
+        self.options_label.pack(padx=5, pady=5)
+        self.options_label.configure(text="File List", font=("Inclusive Sans", 20))
 
         self.A20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
-        self.A20_textbox.pack(side= "bottom", fill="x", expand=True, pady=10, padx=20)
-        self.A20_textbox.insert("2.0", "You're files will display here...") # placeholder text
+        self.A20_textbox.pack(side= "top", fill="x", pady=10, padx=10)
+        self.A20_textbox.insert("2.0", "A20 files will show here...") # placeholder text
         self.A20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
         
+        self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
+        self.options_frame_mid.pack(side="bottom", pady=1, padx=1)
+        self.options_frame_mid.configure(fg_color=Colour.BACKGROUND_COLOR.value, border_width=2, border_color=Colour.OFF_WHITE.value)
+        
+        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="file names")
+        self.extra_button.pack(side="left", fill="x", padx=5, pady=2)
+        self.extra_button.configure(fg_color=Colour.PINK.value)
+        
+        
+        self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="placeholder")
+        self.extra_button_two.pack(side="left", fill="x", padx=5, pady=2)
+        self.extra_button_two.configure(fg_color=Colour.PINK.value)
+        
+        
+        self.extra_button_three = ctk.CTkButton(self.options_frame_mid, text="placeholder")
+        self.extra_button_three.pack(side="left", fill="x", padx=5, pady=2)
+        self.extra_button_three.configure(fg_color=Colour.PINK.value)
 
 
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
@@ -156,36 +158,11 @@ class App(ctk.CTk):
 
         self.progress_bar = ctk.CTkProgressBar(self.frame_right)
         self.progress_bar.pack(padx=10, pady=10)
-        self.progress_bar.configure(fg_color=Colour.ORANGE.value, progress_color=Colour.OFF_WHITE.value)
+        self.progress_bar.configure(fg_color=Colour.PINK.value, progress_color=Colour.OFF_WHITE.value)
         self.progress_bar.set(0)
   
-    # def start_progress_bar(self):
-    #     self.progress_running = True 
-    #     threading.Thread(targer=self.animate_progress_bar).start()
-    
-    # def animate_progress_bar(self):
-    #     progress_value = 0
-    #     while self.progress_running:
-    #         progress_value+=0.01
-    #         if progress_value > 1:
-    #             progress_value = 0
-    #             self.progress_bar.set(progress_value)
-    #             self.update()
-    #             time.sleep(0.05)
-                
-    # def stop_progress_bar(self):
-    #     self.progress_running = False
-    #     self.progress_bar.set(1)
-  
-        
-
-    
     updated_date = MainController.A20_convert_name
     
-    
-       
-
- 
     
     def manual_a20_sel_to_textbox(self):
             """_summary_
@@ -203,26 +180,19 @@ class App(ctk.CTk):
                     self.A20_textbox.insert("end", name + "\n")
             else:
                 print("No path for A20")
-
-    
-
-    
-    
     
     def update_label_with_folder_path(self):        
         self.folder_path = self._controller.select_folder_path()
+       
         if self.folder_path:
-            # folder_list = os.listdir(self.folder_path)
-    # self.folder_label.delete("1.0", "end")
-            self.folder_label.configure(text=f"PATH:\n{self.folder_path}", font=("Inclusive Sans", 15))
+            self.folder_label.delete("1.0", "end")
+            self.folder_label.insert("end", text=f"{self.folder_path}")
                                    
             print(f"Folder path set to: {self.folder_path}")
         else:
             print("No folder path selected.")
         
-    
-
-    
+  
     
     def create_tx_buttons(self, tx_info=None):
         
@@ -245,7 +215,6 @@ class App(ctk.CTk):
             self.drive_buttons[a20_mount_point] = button 
         self.after(5000, self._usb_controller.list_drives)
                 
-    
     
     def handle_drive_selection(self, a20_mount_point):
     # Convert the file names using the A20_convert_name method

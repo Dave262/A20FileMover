@@ -8,7 +8,7 @@ class Colour(Enum):
     
     BACKGROUND_COLOR = "#3c3836"
     BACKGROUND_DARK = "#1d2021"
-    PINK = "#86592d"             
+    PINK = "#8f3f71"             
     BLUE = "#458588"            
     BLACK = "#000000"           
     WHITE = "#FFFFFF"            

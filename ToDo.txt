@@ -1,11 +1,13 @@
 Thursday 17 Oct
 
 
+
+    Make the 
+
+
+
     Show only todays files 
 
     button to make readable date and time 
-
-    Folder Label instead of weird text box 
-        - manually select folder
 
     integrate folder maker and pull daily folder into Folder label 

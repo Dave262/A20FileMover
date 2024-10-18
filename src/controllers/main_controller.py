@@ -82,40 +82,6 @@ class MainController:
             return new_names
 
 
-
-    # def move_files(self, A20_path, folder_path, update_progress_callback=None):
-    #     if A20_path and folder_path:
-    #         print(f"def - move_files in main controller can see {A20_path} : {folder_path}")
-    #         files = os.listdir(A20_path)
-    #         total_files = len(files)
-    #         moved_files = 0
-    # # Create a progress bar using tqdm        
-    #         with tqdm(total=total_files, desc="Moving Files") as progress_bar:
-    #             for file in files:
-    #                 name_only = re.findall(r'[a-zA-Z]+', file.removesuffix(".wav"))
-    #                 if name_only:
-    #                     name_only = name_only[0]
-    #                     print(name_only)
-    #                 for folder in os.listdir(folder_path):
-    #                     if name_only == folder:
-    #                         print("there's a match!")
-                            
-    #                         src_path = os.path.join(A20_path, file)
-    #                         dst_path = os.path.join(folder_path, folder, file)
-                            
-    #                         progress_bar.set_postfix(file=file)
-                            
-    #                         shutil.move(src_path, dst_path)
-    #                         moved_files += 1
-                            
-    #                         print(f"moved file: {file} to folder: {folder}")
-                            
-    #                         progress_bar.update(1)
-                            
-    #                         if update_progress_callback:
-    #                             update_progress_callback(moved_files / total_files)
-    #                         break
-
    
     def move_files(self, A20_path, folder_path, ctk_progress_bar):
 
@@ -132,6 +98,8 @@ class MainController:
                 for folder in os.listdir(folder_path):
                     if name_only == folder:
                         print("there's a match!")
+                    # elif name_only != folder:
+                    #     print(f"no match found for{name_only}")
                         
                         src_path = os.path.join(A20_path, file)
                         dst_path = os.path.join(folder_path, folder, file)
@@ -185,5 +153,5 @@ class MainController:
 if __name__ == "__main__":
     controller = MainController()
     current_time = controller.global_time()
-    # wav_info = controller.give_list_of_attributes_for_tx_files()
+    wav_info = controller.give_list_of_attributes_for_tx_files()
     print(f"The time is: {current_time}")
