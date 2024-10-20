@@ -1,13 +1,14 @@
 from typing import Union
-
 import customtkinter as ctk
 from typing import Union, Callable
 from utils.enums import Colour
 from controllers.main_controller import MainController
-from controllers.macos_drive_controller import MacUsbDeviceController
+# from src.controllers.macos_drive_controller_v2 import MacUsbDeviceController
 from controllers.linux_drive_controller import LinuxDeviceHandler
 from utils.system_get import SystemGet
-from controllers.mac_usb_controller_v1 import MacUsbControlerV1
+# from controllers.mac_usb_controller_v1 import MacUsbControlerV1
+from controllers.macos_drive_controller_v2 import FileReport
+
 
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
@@ -32,12 +33,11 @@ class App(ctk.CTk):
         system_platform = system_get.system_trigger()
 
         if system_platform == "Darwin":
-            self._usb_controller = MacUsbControlerV1()
+            self._usb_controller = FileReport()
         elif system_platform == "Linux":
             self._usb_controller  = LinuxDeviceHandler()
         else:
             raise Exception(f"Unsupported platform: {system_platform}")
-
 
         # init controllers
         self._controller = MainController()
@@ -97,8 +97,6 @@ class App(ctk.CTk):
         self.A20_instance_label.pack(padx=5, pady=5)
         self.A20_instance_label.configure(text="Transmitter List", font=("Inclusive Sans", 20))
 
-
-
         self.options_frame = ctk.CTkFrame(self.frame_left)
         self.options_frame.pack(side="bottom", fill='both', pady=1, padx=1)
         self.options_frame.configure(fg_color="transparent", border_width=2, border_color=Colour.OFF_WHITE.value)
@@ -111,12 +109,10 @@ class App(ctk.CTk):
         self.A20_path_button.pack(pady=10)
         self.A20_path_button.configure(fg_color=Colour.PINK.value)
         
-        
+                
         self.folder_path_button = ctk.CTkButton(self.options_frame, text="Choose Destination", command=self.update_label_with_folder_path)
         self.folder_path_button.pack(pady=10)
-        self.folder_path_button.configure(fg_color=Colour.PINK.value)  
-        
-        
+        self.folder_path_button.configure(fg_color=Colour.PINK.value)       
         
         self.options_label = ctk.CTkLabel(self.frame_middle)
         self.options_label.pack(padx=5, pady=5)
@@ -192,41 +188,39 @@ class App(ctk.CTk):
         else:
             print("No folder path selected.")
         
-  
-    
-    def create_tx_buttons(self, tx_info=None):
-        
-        if tx_info is None:
-            tx_info = self._usb_controller.list_drives()
 
-    # Clear existing drive buttons
+    
+    def create_tx_buttons(self, passed_label_list=None):
+        
+        if passed_label_list is None:
+            passed_label_list = self._usb_controller.mount_drives() # definine the list
+
+# Clear any existing drive buttons
         for button in self.drive_buttons.values():
             button.destroy()
         self.drive_buttons.clear()        
-        for drive_info in tx_info:
-            a20_mount_point: str = drive_info.get('mountpoint')  
-
-            a20_drive_label: str = a20_mount_point.replace("/Volumes/","")  # strips out just the name label
+        # for drive_info in passed_label_list:
+        
+        for tx in passed_label_list:
+            print(tx)
     # Create a new button
-            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {a20_drive_label}", command=lambda mount_point=a20_mount_point: self.handle_drive_selection(mount_point))
+            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {tx}", command=lambda tx_button=tx: self.handle_drive_selection(tx_button))
             button.pack(pady=10)  # Adjust layout as needed       
 
     # Store the button in the dictionary for future reference
-            self.drive_buttons[a20_mount_point] = button 
-        self.after(5000, self._usb_controller.list_drives)
+            self.drive_buttons[tx] = button 
+            # self.after(5000, self._usb_controller.mount_drives)
                 
     
     def handle_drive_selection(self, a20_mount_point):
-    # Convert the file names using the A20_convert_name method
-     
         if a20_mount_point:
+            received_file_list = self._usb_controller.info_getter()
             self.A20_path = a20_mount_point # gets a20 files ready to move
-        
             try:
-                converted_names = self._controller.A20_convert_name(a20_mount_point)
                 self.A20_textbox.delete("1.0", "end") 
-                for name in converted_names:
-                    self.A20_textbox.insert("end", name + "\n")
+                for file_info in received_file_list:
+                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : start tc-{file_info['start_tc']}\n" 
+                    self.A20_textbox.insert("end", display_text)
                 print(f"handle_drive_selection can see: {a20_mount_point}")
             except ValueError:
                 print("Couldn't load a20 mount pointt")
