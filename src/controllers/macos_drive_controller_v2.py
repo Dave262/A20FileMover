@@ -21,58 +21,51 @@ class FileReport:
      
     def mount_drives(self):
         exfat_present = False
-        drives = psutil.disk_partitions(all=False)
+        system_drives = psutil.disk_partitions(all=False)
         
-        for drive in drives: # loop through all system drives checking for exfat type
+        for drive in system_drives: # loop through all system drives checking for exfat type
             if drive.fstype=="exfat": 
-                self.file_path = drive.mountpoint               
+                self.file_path = drive.mountpoint  
+                exfat_present = True                
                 
-                tx_label = self.file_path.strip("/Volumes/")
-                
-                
+                tx_label = self.file_path.strip("/Volumes/") 
                 print("------------")
                 logging.info(f"found external drive: {self.file_path}")
-                
                 self.send_path_list.append(self.file_path)   
-                exfat_present = True   
+
                 print(f"TX: {tx_label}")
                 print("------------")
-                self.send_label_list.append(tx_label)     
-                     
                 
-                # drive_stats = psutil.disk_usage(self.file_path)
+                self.send_label_list.append(tx_label)                 
         
         if not exfat_present: # defaults to an predefined 
             print("------------")
             logging.warning("No exFAT device found.")
             print("------------")
-            self.file_path = "/Users/davidross/Documents/A20_Test_Folders/Bodypack_Folders/Brent"
-            file_list = os.listdir(self.file_path)
-            for wav_file in file_list:
-                if wav_file.lower().endswith('.wav'):
-                    self.wav_list.append(wav_file)
-        print("------summary-------")
-        print(f"tx labels : {self.send_label_list}")
-        print(f"tx paths : {self.send_path_list}")
-        return self.send_label_list              
-                    
+            # print("------summary-------")
+            # print (f"selected path = {self.file_path}")
+            # print(f"tx labels : {self.send_label_list}")
+            # print(f"tx paths : {self.send_path_list}")
+        return self.file_path          
 
-            
-  
-    def info_getter(self):
+
+    def info_getter(self, selected_files=None):
         counter = 1
-        # file_reporter.mount_drives() # call mount drives method
         
-        # self.file_list = os.listdir(self.file_path)
-        path_list = self.send_path_list # list of drive mount points
-        
-        for tx in path_list:    
-            self.file_list= os.listdir(tx)       
+        if selected_files:
+            path_list = selected_files
+        else: 
+            path_list = self.send_path_list # list of drive mount points
+
+
+
+
+                
+        for tx in path_list:       
+            self.file_list = os.listdir(tx)       
             for wav_file in self.file_list:
                 if wav_file.lower().endswith('.wav'):             
 # Every File
-#              
-                   
                     try:
                         info = wavinfo.WavInfoReader(os.path.join(tx, wav_file))
                     except Exception as e:   
@@ -109,29 +102,27 @@ class FileReport:
                         "count" : counter,
                         "file_name" : file_name,
                         "mb" : round(file_megabytes, 2),
-                        "start_tc" : start_tc
-                        
-                    }
+                        "start_tc" : start_tc  
+                    }  
                     
                     self.timeref = file_time_ref
-                    self.sample_rate = sample_rate
+                    self.sample_rate = sample_rate 
+                    
+
                     
                     # add anything yu want to see here
                     print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
                     
                     counter += 1
                     self.wav_list.append(file_info)
-        print (self.wav_list)
-        return self.wav_list
-        
-            
-
-
-
+            return self.wav_list
+        else:
+            print("whatever")
+                
+                
 if __name__=="__main__":
     file_reporter = FileReport()
     file_reporter.mount_drives()
-  
     file_reporter.info_getter()
 
 
