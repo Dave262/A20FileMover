@@ -13,6 +13,34 @@ from tqdm import tqdm
 
 
 
+# from tqdm import tqdm
+
+# class TextboxTqdm(tqdm):
+#     def __init__(self, *args, textbox=None, **kwargs):
+#         self.textbox = textbox  # Set the textbox attribute first
+#         super().__init__(*args, **kwargs)
+
+#     def write(self, s, end="\n", **kwargs):
+#         print(f"Writing to textbox: {s}")  # Debug print
+#         if self.textbox:
+#             try:
+#                 self.textbox.insert("end", s + end)
+#                 self.textbox.see("end")  # Scroll to the end
+#             except Exception as e:
+#                 print(f"Error writing to textbox: {e}")
+#         else:
+#             super().write(s, end=end, **kwargs)
+
+#     def display(self, msg=None, pos=None):
+#         if self.textbox:
+#             if msg is not None:
+#                 self.textbox.insert("end", f"{msg}\n")
+#                 self.textbox.see("end")
+#         else:
+#             super().display(msg, pos)
+
+
+
 
 class MainController:
     
@@ -44,40 +72,44 @@ class MainController:
 
  
   
-    def move_files(self, A20_path, folder_path):
+    def move_files(self, A20_path, folder_path, textbox=None):
         if A20_path and folder_path:
             print(f"def - move_files in main controller can see {A20_path} : {folder_path}")
-            # self.start_progress_bar()
             files = os.listdir(A20_path)
             
             for file in files:
                 name_only = re.findall(r'[a-zA-Z]+', file.removesuffix(".wav"))
                 if name_only:
                     name_only = name_only[0]
-                    print(name_only)
-                for folder in os.listdir(folder_path):
-                    if name_only == folder:
-                        print("there's a match!")
-                    elif name_only != folder:
-                        print(f"no match found for{name_only}")
-                        
-                        src_path = os.path.join(A20_path, file)
-                        dst_path = os.path.join(folder_path, folder, file)
-                        
-                        # Get the size of the file for tracking progress
+                    match_found = False
+
+                    for folder in os.listdir(folder_path):
+                        if name_only == folder:
+                            print(f"there's a match! : {file} corresponds to the folder {folder}")
+                            match_found = True
+                            src_path = os.path.join(A20_path, file)
+                            dst_path = os.path.join(folder_path, folder, file)
+                            break
+                    
+                    if not match_found:
+                        print(f"No match found for {name_only}, moving on.")
+                        continue
+
+                    try:
                         file_size = os.path.getsize(src_path)
-                        
-                        # Open the source and destination files and copy in chunks while updating the progress bar
+                        print(f"Starting copy of {file} with size {file_size} bytes")
                         with open(src_path, 'rb') as src_file, open(dst_path, 'wb') as dst_file:
                             with tqdm(total=file_size, desc=f"Copying {file}", unit='B', unit_scale=True) as progress_bar:
                                 for chunk in iter(lambda: src_file.read(1024 * 1024), b''):
                                     dst_file.write(chunk)
                                     progress_bar.update(len(chunk))
-                        
-                       # Optionally, remove the source file after copying to simulate move
+
+
                         os.remove(src_path)
                         print(f"Moved file: {file} to folder: {folder}")
-                        self.stop_progress_bar()
+                    except Exception as e:
+                        print(f"Error moving file {file}: {e}")
+        
             print("ALL FILES MOVED!")
 
 

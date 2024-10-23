@@ -15,7 +15,7 @@ class FileReport:
         self.file_path = ""
         self.wav_list = []
         self.file_list = [] # each transmitters list of files
-        self.send_label_list = []
+        self.send_label_list = [] # list of drive labels for button creation
         self.send_path_list =[]
 
      
@@ -23,31 +23,31 @@ class FileReport:
         exfat_present = False
         system_drives = psutil.disk_partitions(all=False)
         
-        for drive in system_drives: # loop through all system drives checking for exfat type
-            if drive.fstype=="exfat": 
+        logging.info("Checking system drives...")
+        
+        for drive in system_drives:  # loop through all system drives checking for exfat type
+            logging.info(f"Found drive: {drive.device}, Type: {drive.fstype}")
+            if drive.fstype == "exfat": 
                 self.file_path = drive.mountpoint  
                 exfat_present = True                
-                
-                tx_label = self.file_path.strip("/Volumes/") 
-                print("------------")
-                logging.info(f"found external drive: {self.file_path}")
-                self.send_path_list.append(self.file_path)   
 
+                tx_label = os.path.basename(self.file_path)  # only return the drive label
+                print("------------")
+                logging.info(f"Found external drive: {self.file_path}")
+                self.send_path_list.append(self.file_path)   
                 print(f"TX: {tx_label}")
                 print("------------")
-                
-                self.send_label_list.append(tx_label)                 
+                self.send_label_list.append(tx_label)                
         
-        if not exfat_present: # defaults to an predefined 
+        if not exfat_present:  # defaults to a predefined 
             print("------------")
             logging.warning("No exFAT device found.")
             print("------------")
-            # print("------summary-------")
-            # print (f"selected path = {self.file_path}")
-            # print(f"tx labels : {self.send_label_list}")
-            # print(f"tx paths : {self.send_path_list}")
-        return self.file_path          
-
+        
+        return {
+            "labels" : self.send_label_list,  # Return the list of drive labels after checking all drives
+            "paths" : self.send_path_list
+        }
 
     def info_getter(self, selected_files=None):
         counter = 1
@@ -102,14 +102,13 @@ class FileReport:
                         "count" : counter,
                         "file_name" : file_name,
                         "mb" : round(file_megabytes, 2),
+                        "length" : time_delta,
                         "start_tc" : start_tc  
                     }  
                     
                     self.timeref = file_time_ref
                     self.sample_rate = sample_rate 
-                    
 
-                    
                     # add anything yu want to see here
                     print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
                     
@@ -124,6 +123,7 @@ if __name__=="__main__":
     file_reporter = FileReport()
     file_reporter.mount_drives()
     file_reporter.info_getter()
+
 
 
 

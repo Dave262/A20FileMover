@@ -3,9 +3,10 @@ import customtkinter as ctk
 from typing import Union, Callable
 from utils.enums import Colour
 from controllers.main_controller import MainController
-from controllers.linux_drive_controller import LinuxDeviceHandler
-from utils.system_get import SystemGet
+# from controllers.main_controller import TextboxTqdm
 from controllers.macos_drive_controller_v2 import FileReport
+import logging
+import time
 
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
@@ -24,21 +25,12 @@ class App(ctk.CTk):
         
         self.geometry("800x500")
         self.title("A20 TX File Mover")
-        
 
-        system_get = SystemGet()
-        system_platform = system_get.system_trigger()
+# Controllers    
+        self._usb_controller = FileReport()
 
-        if system_platform == "Darwin":
-            self._usb_controller = FileReport()
-        elif system_platform == "Linux":
-            self._usb_controller  = LinuxDeviceHandler()
-        else:
-            raise Exception(f"Unsupported platform: {system_platform}")
-
-        # init controllers
         self._controller = MainController()
-        # self._usb_controller = MacUsbDeviceController()   
+     
 
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=1)
@@ -80,9 +72,9 @@ class App(ctk.CTk):
 
 # Folder Stuff
 
-        self.folder_label = ctk.CTkTextbox(self.frame_right, height=50, fg_color="transparent")
-        self.folder_label.pack(fill="x", pady=10, padx=20)
-        self.folder_label.insert("0.0", "Placeholder Folder Ha!")
+        # self.folder_label = ctk.CTkTextbox(self.frame_right, height=50, fg_color="transparent")
+        # self.folder_label.pack(fill="x", pady=10, padx=20)
+        # self.folder_label.insert("0.0", "Placeholder Folder Ha!")
 
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
         self.A20_instance_frame.pack(side="top", pady=1, padx=1)
@@ -90,7 +82,7 @@ class App(ctk.CTk):
         
         self.A20_instance_label = ctk.CTkLabel(self.A20_instance_frame)
         self.A20_instance_label.pack(padx=5, pady=5)
-        self.A20_instance_label.configure(text="Transmitter List\n --------------- ", font=("Inclusive Sans", 20))
+        self.A20_instance_label.configure(text="Transmitter List", font=("Inclusive Sans", 20))
 
         self.options_frame = ctk.CTkFrame(self.frame_left)
         self.options_frame.pack(side="bottom", fill='both', pady=1, padx=1)
@@ -127,9 +119,20 @@ class App(ctk.CTk):
         self.extra_button.configure(fg_color=Colour.PINK.value)
         
         
-        self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="placeholder")
+        self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="Clear Files")
         self.extra_button_two.pack(side="left", fill="x", padx=5, pady=2)
         self.extra_button_two.configure(fg_color=Colour.PINK.value)
+
+        self.options_label = ctk.CTkLabel(self.frame_right)
+        self.options_label.pack(padx=5, pady=5)
+        self.options_label.configure(text="Info Window", font=("Inclusive Sans", 20))
+
+
+        self.terminal_textbox = ctk.CTkTextbox(self.frame_right, height=300)
+        self.terminal_textbox.pack(side= "top", fill="x", pady=10, padx=10)
+        self.terminal_textbox.insert("2.0", "No Folder Selected...") # placeholder text
+        self.terminal_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
+
         
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
         self.move_files_button.pack(pady=20)
@@ -143,14 +146,17 @@ class App(ctk.CTk):
         self.progress_bar.set(0)
   
     # updated_date = MainController.A20_convert_name
-    
+        # print("calling test_textbox_tqdm")
+        # self.test_textbox_tqdm(self.terminal_textbox)
+
+
     def manual_a20_sel_to_textbox(self):
             path = self._controller.select_A20_path()
             path_convert_list = []
             path_convert_list.append (path)
            
             if path:
-                self.A20_path = path_convert_list
+                self.A20_path = "".join(path_convert_list) # converting list back to string
                 print(f"manual sel path : {path_convert_list}")
                 
                 received_file_list = self._usb_controller.info_getter(path_convert_list)
@@ -169,8 +175,8 @@ class App(ctk.CTk):
         self.folder_path = self._controller.select_folder_path()
        
         if self.folder_path:
-            self.folder_label.delete("1.0", "end")
-            self.folder_label.insert("end", text=f"{self.folder_path}")
+            self.terminal_textbox.delete("1.0", "end")
+            self.terminal_textbox.insert("end", text=f"Selected folder path:\n{self.folder_path}")
                                    
             print(f"Folder path set to: {self.folder_path}")
         else:
@@ -178,34 +184,54 @@ class App(ctk.CTk):
 
 
 
-    def create_tx_buttons(self, passed_label_list=None):
+    def create_tx_buttons(self):
 
-        if passed_label_list:
-            for tx in passed_label_list:
-                for button in self.drive_buttons.value():
-                    button.destroy()
-                    self.drive_buttons.clear()
-                    button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {tx}", command=lambda tx_button=tx: self.select_tx_button(tx_button))
-                    button.pack(pady=10)  # Adjust layout as needed       
-                    self.drive_buttons[tx] = button 
-                    
-        if passed_label_list is None:
-            print("no drives attached")
-        
-        self.after(5000, self.create_tx_buttons) 
+        drive_info = self._usb_controller.mount_drives()
+
+        labels = drive_info["labels"]
+        paths = drive_info["paths"]
+
+        logging.info(f"Creating TX buttons for: {labels}")
+
+        for button in self.drive_buttons.values():
+            button.destroy()
+        self.drive_buttons.clear()
+
+
+        if labels:
+            for index, label in enumerate(labels):
+                full_path = paths[index]
+                logging.info(f"Creating button for: {label} with path {full_path}")
+
+                button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {label}", command=lambda tx_button=full_path: self.select_tx_button(tx_button))
+                button.pack(pady=10)  # Adjust layout as needed       
+                self.drive_buttons[label] = button 
+                logging.info(f"Button for {label} packed successfully.")
+
+        else:
+            logging.warning("No drives attached.")
+   
+
              
                           
     def select_tx_button(self, a20_mount_point):
+        logging.info(f"Selected TX mount point: {a20_mount_point}")  # Log the selected mount point
         if a20_mount_point:
-            received_file_list = self._usb_controller.info_getter()
-            self.A20_path = a20_mount_point # gets a20 files ready to move
+            received_file_list = self._usb_controller.info_getter([a20_mount_point])  # Retrieve the file list
+            logging.info(f"Received file list: {received_file_list}")  # Log the received file list
+            self.A20_path = a20_mount_point  # Store the selected mount point
+            
             try:
-                self.A20_textbox.delete("1.0", "end") 
-                for file_info in received_file_list:    
-                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : start tc-{file_info['start_tc']}\n" 
-                    self.A20_textbox.insert("end", display_text)
-            except ValueError:
-                print("Couldn't load a20 mount pointt")
+                self.A20_textbox.delete("1.0", "end")  # Clear the text box
+                for file_info in received_file_list:
+                    logging.info(f"Processing file info: {file_info}")  # Log each file info being processed
+                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n\n"
+                    self.A20_textbox.insert("end", display_text)  # Populate the text box
+                logging.info("File list populated in the text box.")  # Log successful population
+            except ValueError as e:
+                logging.error(f"Error loading A20 mount point: {e}")  # Log any errors encountered
+        else:
+            logging.warning("No mount point selected.")  # Log if no mount point is provided
         return a20_mount_point    
 
 
@@ -216,9 +242,25 @@ class App(ctk.CTk):
     def call_move_files(self):
         if self.A20_path and self.folder_path:
             print("i see both paths")
-            self._controller.move_files(self.A20_path, self.folder_path)
+            self._controller.move_files(self.A20_path, self.folder_path, textbox=self.terminal_textbox)
         else:
             print("Please select both paths before moving files.")
+
+    # def test_textbox_tqdm(self, textbox):
+    #     print("Starting test_textbox_tqdm")  # Debug print
+
+    #     def update_progress(i, progress_bar):
+    #         if i < 100:
+    #             progress_bar.update(1)
+    #             progress_bar.write(f"Progress: {i+1}/100")  # Use write method
+    #             self.after(100, update_progress, i+1, progress_bar)  # Schedule next update
+
+    #     with TextboxTqdm(total=100, desc="Test", unit='B', unit_scale=True, textbox=textbox) as progress_bar:
+    #         update_progress(0, progress_bar)
+    #             # print(f"Progress: {i+1}/10")
+
+    
+    
 
 app = App()
 app.mainloop()
