@@ -23,7 +23,7 @@ class App(ctk.CTk):
         self.grid_rowconfigure((1), weight=1)
         self.grid_columnconfigure((0,1,2), weight=1)  
         
-        self.geometry("800x500")
+        self.geometry("900x600")
         self.title("A20 TX File Mover")
 
 # Controllers    
