@@ -7,6 +7,7 @@ from controllers.main_controller import MainController
 from controllers.macos_drive_controller_v2 import FileReport
 import logging
 import time
+import threading
 
 # when calling a function from any of the controller modules the syntax is 
 # "self.[_reference to controller as listed in script].function
@@ -23,7 +24,7 @@ class App(ctk.CTk):
         self.grid_rowconfigure((1), weight=1)
         self.grid_columnconfigure((0,1,2), weight=1)  
         
-        self.geometry("900x600")
+        self.geometry("900x480")
         self.title("A20 TX File Mover")
 
 # Controllers    
@@ -86,7 +87,7 @@ class App(ctk.CTk):
 
         self.options_frame = ctk.CTkFrame(self.frame_left)
         self.options_frame.pack(side="bottom", fill='both', pady=1, padx=1)
-        self.options_frame.configure(fg_color="transparent", border_width=2, border_color=Colour.OFF_WHITE.value)
+        self.options_frame.configure(fg_color="transparent")
         
         self.options_label = ctk.CTkLabel(self.options_frame)
         self.options_label.pack(padx=5, pady=5)
@@ -133,17 +134,15 @@ class App(ctk.CTk):
         self.terminal_textbox.insert("2.0", "No Folder Selected...") # placeholder text
         self.terminal_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
 
+
+
         
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
-        self.move_files_button.pack(pady=20)
+        self.move_files_button.pack(pady=10)
         self.drive_buttons = {}       
 
 # Progress bar
 
-        self.progress_bar = ctk.CTkProgressBar(self.frame_right)
-        self.progress_bar.pack(padx=10, pady=10)
-        self.progress_bar.configure(fg_color=Colour.PINK.value, progress_color=Colour.OFF_WHITE.value)
-        self.progress_bar.set(0)
   
     # updated_date = MainController.A20_convert_name
         # print("calling test_textbox_tqdm")
@@ -236,9 +235,43 @@ class App(ctk.CTk):
 
 
 
-    def update_progress(self, progress):
-        self.progressbar.set(progress)
-    
+
+
+    def create_text_progress_bar(percentage, total_length=70):
+        # Determine the number of filled positions
+        filled_length = int(percentage / 100 * total_length)
+        # Create the bar with '#' for filled and '-' for unfilled
+        bar = '|' * filled_length + '' * (total_length - filled_length)
+        return f"[{bar}] {percentage:.0f}%"
+
+
+    def progress_bar(self, textbox, progress_callback):
+        bar_icon = "|"
+        progress_callback(percentage)
+
+        for i in range(101):
+            percentage = i
+            textbox = self.terminal_textbox
+            textbox.delete("1.0", ctk.END)
+            textbox.insert(ctk.END, bar_icon)
+
+            time.sleep(0.01) 
+
+
+    def start_auto_fill(self, textbox):
+        thread = threading.Thread(target=self.progress_bar, args=(textbox))
+        thread.start()
+
+
+    # def update_progress(self, percentage):
+    #     progress_bar.set(percentage / 100)  # Update the visual progress bar
+
+
+
+
+
+
+
     def call_move_files(self):
         if self.A20_path and self.folder_path:
             print("i see both paths")

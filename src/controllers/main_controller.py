@@ -72,7 +72,7 @@ class MainController:
 
  
   
-    def move_files(self, A20_path, folder_path, textbox=None):
+    def move_files(self, A20_path, folder_path, textbox=None, progress_callback=None):
         if A20_path and folder_path:
             print(f"def - move_files in main controller can see {A20_path} : {folder_path}")
             files = os.listdir(A20_path)
@@ -103,7 +103,10 @@ class MainController:
                                 for chunk in iter(lambda: src_file.read(1024 * 1024), b''):
                                     dst_file.write(chunk)
                                     progress_bar.update(len(chunk))
-
+                                    
+                                    if progress_callback:
+                                        progress_callback(len(chunk), file_size)
+                  
 
                         os.remove(src_path)
                         print(f"Moved file: {file} to folder: {folder}")
