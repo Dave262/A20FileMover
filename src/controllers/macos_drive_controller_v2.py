@@ -59,7 +59,8 @@ class FileReport:
 
 
         for tx in path_list:
-            self.file_list = os.listdir(tx)
+            self.file_list: str = os.listdir(tx)
+            print(f"HELLO {self.file_list}")
             for wav_file in self.file_list:
                 if wav_file.lower().endswith('.wav'):
 # Every File

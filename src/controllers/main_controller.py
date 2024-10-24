@@ -12,10 +12,6 @@ from controllers.macos_drive_controller_v2 import FileReport
 from tqdm import tqdm
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c6616a799cd17a24ce5d5cb1585d5c1aab8368e8
 class MainController:
 
     def __init__(self):
@@ -41,7 +37,6 @@ class MainController:
 
     def select_A20_path(self,):
         A20_path: str = filedialog.askdirectory(initialdir="/home/david/Python_Projects/", title="please select your A20 pack")
-        # print(A20_path)
         return A20_path
 
 

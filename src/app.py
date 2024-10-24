@@ -204,14 +204,15 @@ class App(ctk.CTk):
 
 
     def select_tx_button(self, a20_mount_point):# -> Any:# -> Any:# -> Any:
+        self.A20_textbox.delete("1.0", "end") 
         logging.info(f"Selected TX mount point: {a20_mount_point}")  # Log the selected mount point
         if a20_mount_point:
-            received_file_list = self._usb_controller.info_getter([a20_mount_point])  # Retrieve the file list
+            received_file_list: str = self._usb_controller.info_getter(a20_mount_point)  # Retrieve the file list
             logging.info(f"Received file list: {received_file_list}")  # Log the received file list
             self.A20_path = a20_mount_point  # Store the selected mount point
 
             try:
-                self.A20_textbox.delete("1.0", "end")  # Clear the text box
+                 # Clear the text box
                 for file_info in received_file_list:
                     logging.info(f"Processing file info: {file_info}")  # Log each file info being processed
                     display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n"
