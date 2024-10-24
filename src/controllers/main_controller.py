@@ -12,36 +12,6 @@ from controllers.macos_drive_controller_v2 import FileReport
 from tqdm import tqdm
 
 
-
-# from tqdm import tqdm
-
-# class TextboxTqdm(tqdm):
-#     def __init__(self, *args, textbox=None, **kwargs):
-#         self.textbox = textbox  # Set the textbox attribute first
-#         super().__init__(*args, **kwargs)
-
-#     def write(self, s, end="\n", **kwargs):
-#         print(f"Writing to textbox: {s}")  # Debug print
-#         if self.textbox:
-#             try:
-#                 self.textbox.insert("end", s + end)
-#                 self.textbox.see("end")  # Scroll to the end
-#             except Exception as e:
-#                 print(f"Error writing to textbox: {e}")
-#         else:
-#             super().write(s, end=end, **kwargs)
-
-#     def display(self, msg=None, pos=None):
-#         if self.textbox:
-#             if msg is not None:
-#                 self.textbox.insert("end", f"{msg}\n")
-#                 self.textbox.see("end")
-#         else:
-#             super().display(msg, pos)
-
-
-
-
 class MainController:
     
     def __init__(self):

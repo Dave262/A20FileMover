@@ -109,7 +109,7 @@ class App(ctk.CTk):
         self.A20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
         self.A20_textbox.pack(side= "top", fill="x", pady=10, padx=10)
         self.A20_textbox.insert("2.0", "A20 files will show here...") # placeholder text
-        self.A20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
+        self.A20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value, font=("Inclusive Sans", 13))
         
         self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
         self.options_frame_mid.pack(side="bottom", pady=(2, 20), padx=1)
@@ -118,7 +118,6 @@ class App(ctk.CTk):
         self.extra_button = ctk.CTkButton(self.options_frame_mid, text="file names")
         self.extra_button.pack(side="left", fill="x", padx=5, pady=2)
         self.extra_button.configure(fg_color=Colour.PINK.value)
-        
         
         self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="Clear Files")
         self.extra_button_two.pack(side="left", fill="x", padx=5, pady=2)
@@ -131,23 +130,14 @@ class App(ctk.CTk):
 
         self.terminal_textbox = ctk.CTkTextbox(self.frame_right, height=300)
         self.terminal_textbox.pack(side= "top", fill="x", pady=10, padx=10)
-        self.terminal_textbox.insert("2.0", "No Folder Selected...") # placeholder text
-        self.terminal_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
+        self.terminal_textbox.insert("2.0", "No folder selected...") # placeholder text
+        self.terminal_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value, font=("Inclusive Sans", 13))
 
-
-
-        
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
         self.move_files_button.pack(pady=10)
         self.drive_buttons = {}       
 
 # Progress bar
-
-  
-    # updated_date = MainController.A20_convert_name
-        # print("calling test_textbox_tqdm")
-        # self.test_textbox_tqdm(self.terminal_textbox)
-
 
     def manual_a20_sel_to_textbox(self):
             path = self._controller.select_A20_path()
@@ -224,7 +214,7 @@ class App(ctk.CTk):
                 self.A20_textbox.delete("1.0", "end")  # Clear the text box
                 for file_info in received_file_list:
                     logging.info(f"Processing file info: {file_info}")  # Log each file info being processed
-                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n\n"
+                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n"
                     self.A20_textbox.insert("end", display_text)  # Populate the text box
                 logging.info("File list populated in the text box.")  # Log successful population
             except ValueError as e:
@@ -245,6 +235,7 @@ class App(ctk.CTk):
         return f"[{bar}] {percentage:.0f}%"
 
 
+
     def progress_bar(self, textbox, progress_callback):
         bar_icon = "|"
         progress_callback(percentage)
@@ -258,16 +249,10 @@ class App(ctk.CTk):
             time.sleep(0.01) 
 
 
+
     def start_auto_fill(self, textbox):
         thread = threading.Thread(target=self.progress_bar, args=(textbox))
         thread.start()
-
-
-    # def update_progress(self, percentage):
-    #     progress_bar.set(percentage / 100)  # Update the visual progress bar
-
-
-
 
 
 
@@ -279,20 +264,6 @@ class App(ctk.CTk):
         else:
             print("Please select both paths before moving files.")
 
-    # def test_textbox_tqdm(self, textbox):
-    #     print("Starting test_textbox_tqdm")  # Debug print
-
-    #     def update_progress(i, progress_bar):
-    #         if i < 100:
-    #             progress_bar.update(1)
-    #             progress_bar.write(f"Progress: {i+1}/100")  # Use write method
-    #             self.after(100, update_progress, i+1, progress_bar)  # Schedule next update
-
-    #     with TextboxTqdm(total=100, desc="Test", unit='B', unit_scale=True, textbox=textbox) as progress_bar:
-    #         update_progress(0, progress_bar)
-    #             # print(f"Progress: {i+1}/10")
-
-    
     
 
 app = App()
