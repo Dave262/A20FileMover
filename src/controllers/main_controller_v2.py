@@ -7,13 +7,17 @@ from datetime import datetime
 from typing import Union, Callable
 import wavinfo
 from wavinfo import WavInfoReader
-from app.py import app.py
+
+ 
 from tqdm import tqdm
 
 
 class MainController:
-    def __init__(self):
+    def __init__(self, update_gui_callback):
         super().__init__()
+        
+        
+        self.update_gui_callback = update_gui_callback  
 
 
     def global_time(self) -> str: 
@@ -83,6 +87,7 @@ class MainController:
         try:
           for file_path, folder_path in move_dict.items():
             file_size: int = os.path.getsize(file_path)
+            file_name = os.path.basename(file_path)
             print(f"Starting copy of {file_path} with size {file_size/1048576:.1f} mb")
             
             destination_file_path = os.path.join(folder_path, os.path.basename(file_path))
@@ -94,7 +99,9 @@ class MainController:
                     dst_file.write(chunk)
                     total_bytes_copied += len(chunk)
                     progress_bar.update(len(chunk))
-                    self.update_custom_progress_bar(total_bytes_copied, file_size)
+                    # progress_string = self.update_custom_progress_bar(total_bytes_copied, file_size, file_name)
+                    self.update_gui_callback(total_bytes_copied, file_size, os.path.basename(file_path))
+                self.update_gui_callback(file_size, file_size, os.path.basename(file_path))
             
             time.sleep(1)
             
@@ -108,14 +115,21 @@ class MainController:
           print(f"Error moving files: {str(e)}")
       else:
         print("no files to move")
-          
-          
-    def update_custom_progress_bar(self, copied, total) -> None:
-      bar_length = 24  # Length of the bar (number of segments)
+    
+    
+    
+      
+    
+    def update_custom_progress_bar(self, copied, total, file_name) -> None:
+
+      
+      bar_length = 36  # Length of the bar (number of segments)
       filled_length = int(bar_length * copied // total)  # Calculate how many segments are filled
       bar = '|' * filled_length + '-' * (bar_length - filled_length)  # Create the bar
-      progress_string = f'\r[{bar}] {copied / 1048576:.1f} MB of {total / 1048576:.1f} MB'  # Print the progress bar
-      return progress_string
+      progress_string = f"Copying : {file_name}\n[{bar}]\n {copied / 1048576:.1f} MB of {total / 1048576:.1f} MB"  # Print the progress bar
+      
+      return progress_string       
+
       
   
 

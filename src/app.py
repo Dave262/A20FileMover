@@ -32,7 +32,7 @@ class App(ctk.CTk):
 # Controllers
         self._usb_controller = FileReport()
 
-        self._controller = MainController()
+        self._controller = MainController(self.print_progress)
 
 
         self.grid_rowconfigure((0), weight=0)
@@ -141,6 +141,8 @@ class App(ctk.CTk):
         self.move_files_button.pack(pady=10)
         self.drive_buttons = {}       
 
+        
+        # self._controller = MainController(self.print_progress)
 
     def manual_a20_sel_to_textbox(self) -> None:
           # Clear the text box immediately
@@ -248,12 +250,20 @@ class App(ctk.CTk):
         else:
             print("Please select both paths before moving files.")
 
-    
-    
-    def print_progress(self, copied, total) -> None:
-        progress_bar = self._controller.update_custom_progress_bar(copied, total)
-        print (progress_bar)
+
+
+    def print_progress(self, copied, total, file_name) -> None:
+        progress_bar = self._controller.update_custom_progress_bar(copied, total, file_name)
+        self.terminal_textbox.delete("1.0", "end")
         self.terminal_textbox.insert("end", progress_bar + '\n')
+        self.terminal_textbox.see("end")
+        self.update()
+        
+    # def update_progress_bar(self, copied, total):
+    #     # This simulates file copying progress for demonstration
+    #     if copied <= total:
+    #         self.print_progress(copied, total)
+    #         self.after(100, self.update_progress_bar, copied + 1024 * 1024, total)
 
 app = App()
 app.mainloop()
