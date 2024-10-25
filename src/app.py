@@ -9,7 +9,8 @@ from controllers.macos_drive_controller_v2 import FileReport
 import logging
 import time
 import threading
-
+import CTkListbox as lb
+import subprocess
 
 # when calling a function from any of the controller modules the syntax is
 # "self.[_reference to controller as listed in script].function
@@ -26,7 +27,7 @@ class App(ctk.CTk):
         self.grid_rowconfigure((1), weight=1)
         self.grid_columnconfigure((0,1,2), weight=1)
 
-        self.geometry("900x480")
+        self.geometry("900x600")
         self.title("A20 TX File Mover")
 
 # Controllers
@@ -36,7 +37,8 @@ class App(ctk.CTk):
 
 
         self.grid_rowconfigure((0), weight=0)
-        self.grid_rowconfigure((1), weight=1)
+        self.grid_rowconfigure((1), weight=2)
+        self.grid_rowconfigure((2), weight=0)
         self.grid_columnconfigure((1,2), weight=1)
         self.grid_columnconfigure((0), weight=0)
 
@@ -50,7 +52,7 @@ class App(ctk.CTk):
 
 # HEADER
         self.frame_header = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_header.grid(row=0, columnspan=3, padx=1, pady=1, sticky="nswe")
+        self.frame_header.grid(row=0, columnspan=3, padx=3, pady=1, sticky="nswe")
 
         self.label_heading =ctk.CTkLabel(self.frame_header)
         self.label_heading.pack(side="left", padx=10, pady=10)
@@ -61,16 +63,21 @@ class App(ctk.CTk):
         self.time_heading.configure(text=f"{self._controller.global_time()}", font=("Inclusive Sans", 15))
 
         self.frame_left = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_left.grid(row=1, column=0, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_left.grid(row=1, column=0, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_left.configure()
 
         self.frame_middle = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_middle.grid(row=1, column=1, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_middle.grid(row=1, column=1, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_middle.configure()
 
         self.frame_right = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_right.grid(row=1, column=2, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_right.grid(row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_right.configure()
+        
+        self.frame_footer = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_footer.grid(row=2, columnspan=3, padx=3, pady=1, sticky="nswe")
+        
+        
 
 # Folder Stuff
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
@@ -80,6 +87,7 @@ class App(ctk.CTk):
         self.tx_list_frame = ctk.CTkFrame(self.A20_instance_frame)
         self.tx_list_frame.pack(pady=1, padx=1)
         self.tx_list_frame.configure(fg_color="transparent")
+        
 
         self.tx_refresh_button = ctk.CTkButton(self.tx_list_frame, text="R", width=30, height=30, command=self.create_tx_buttons)
         self.tx_refresh_button.pack(side="left", pady=5, padx=5)
@@ -110,10 +118,27 @@ class App(ctk.CTk):
         self.options_label.pack(padx=5, pady=5)
         self.options_label.configure(text="File List", font=("Inclusive Sans", 20))
 
-        self.a20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
-        self.a20_textbox.pack(side= "top", fill="x", pady=10, padx=10)
-        self.a20_textbox.insert("2.0", "A20 files will show here...") # placeholder text
-        self.a20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value, font=("Inclusive Sans", 13))
+        # self.a20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
+        # self.a20_textbox.pack(side= "top", fill="x", pady=10, padx=10)
+        # self.a20_textbox.insert("2.0", "A20 files will show here...") # placeholder text
+        # self.a20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value, font=("Inclusive Sans", 13))
+        
+        self.a20_listbox = lb.CTkListbox(self.frame_middle, height=300, command=self.add_to_playback)
+        
+        self.a20_listbox.pack(side= "top", fill="x", pady=10, padx=10)
+        self.a20_listbox.insert(0, "Some Text")
+        self.a20_listbox.configure(border_width=1, 
+                                   border_color=Colour.OFF_WHITE.value, 
+                                   fg_color=Colour.BACKGROUND_DARK.value,
+                                   hover_color="black",
+                                   highlight_color=Colour.PINK.value
+                                   
+                                   )
+        
+        
+        
+        
+        
         
         self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
         self.options_frame_mid.pack(side="bottom", pady=(2, 20), padx=1)
@@ -140,7 +165,15 @@ class App(ctk.CTk):
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
         self.move_files_button.pack(pady=10)
         self.drive_buttons = {}       
+        
+        
+        self.playback_label = ctk.CTkLabel(self.frame_footer)
+        self.playback_label.pack(side="left", padx=10, pady=10)
+        self.playback_label.configure(text="Playback", font=("Inclusive Sans", 20))
+        
 
+    def add_to_playback():
+        print("placeholder add_to_playback")
         
         # self._controller = MainController(self.print_progress)
 
@@ -158,10 +191,12 @@ class App(ctk.CTk):
             
             # Check if any files were received and insert them into the text box
             if received_file_list:
-                self.a20_textbox.delete("1.0", "end")# Ensure the list is not empty
+                count = 0
+                self.a20_listbox.delete(0, "end")# Ensure the list is not empty
                 for file_info in received_file_list:
                     display_text: str = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']:.2f} MB : length-{file_info['length']} : start tc-{file_info['start_tc']}\n"
-                    self.a20_textbox.insert("end", display_text)
+                    self.a20_listbox.insert(f"{count}", display_text)
+                    count = count + 1
             else:
                 print("No files found in the selected directory.")
         else:
@@ -211,11 +246,8 @@ class App(ctk.CTk):
 
 
 
-
-
-
     def select_tx_button(self, a20_mount_point):# -> Any:# -> Any:# -> Any:
-        self.a20_textbox.delete("1.0", "end") 
+        self.a20_listbox.delete(0, "end") 
         logging.info(f"Selected TX mount point: {a20_mount_point}")  # Log the selected mount point
         if a20_mount_point:
             received_file_list: str = self._usb_controller.info_getter(a20_mount_point)  # Retrieve the file list
@@ -223,11 +255,12 @@ class App(ctk.CTk):
             self.A20_path = a20_mount_point  # Store the selected mount point
 
             try:
-                 # Clear the text box
+                count: int = 0
                 for file_info in received_file_list:
                     logging.info(f"Processing file info: {file_info}")  # Log each file info being processed
                     display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n"
-                    self.a20_textbox.insert("end", display_text)  # Populate the text box
+                    count: int = count + 1
+                    self.a20_listbox.insert(f"{count}", display_text)  # Populate the text box
                 logging.info("File list populated in the text box.")  # Log successful population
             except ValueError as e:
                 logging.error(f"Error loading A20 mount point: {e}")  # Log any errors encountered
@@ -264,6 +297,19 @@ class App(ctk.CTk):
     #     if copied <= total:
     #         self.print_progress(copied, total)
     #         self.after(100, self.update_progress_bar, copied + 1024 * 1024, total)
+    
+    
+    
+    def play_selected_audio(self) -> None:
+        """Play the selected audio file."""
+        self.play_audio(self.audio_file_path)
+
+    def play_audio(self, file_path: str) -> None:
+        """Play audio using FFmpeg."""
+        try:
+            subprocess.run(['ffmpeg', '-i', file_path, '-f', 'alsa', 'default'], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"An error occurred while trying to play the audio: {e}")
 
 app = App()
 app.mainloop()
