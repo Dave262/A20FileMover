@@ -51,70 +51,67 @@ class FileReport:
 
     def info_getter(self, selected_files=None):
         counter = 1
+        self.wav_list = []  # Clear the list at the beginning
 
         if selected_files:
             path_list = [selected_files]
         else:
-            path_list = self.send_path_list # list of drive mount points
-
+            path_list = self.send_path_list  # List of drive mount points
 
         for tx in path_list:
-            self.file_list: str = os.listdir(tx)
-            print(f"HELLO {self.file_list}")
+            try:
+                self.file_list = os.listdir(tx)  # Get the list of files in the directory
+                print(f"HELLO {self.file_list}")
+            except Exception as e:
+                logging.error(f"Failed to list directory {tx}: {e}")
+                continue
+
             for wav_file in self.file_list:
                 if wav_file.lower().endswith('.wav'):
-# Every File
+                    # Every File
                     try:
                         info = wavinfo.WavInfoReader(os.path.join(tx, wav_file))
                     except Exception as e:
                         logging.error(f"Failed to read {wav_file}: {e}")
                         continue
-                    time.sleep(.05)
+
+                    time.sleep(0.05)
                     bext_metadata = info.bext
-                    info_metadata = info.info # doesn't seem to return anything
-                    general_metadata = info.fmt # sample rate, bit depth etc.
+                    general_metadata = info.fmt  # Sample rate, bit depth, etc.
                     chunk_metadata = info.data
 
-            # useful options for wav data to pull
+                    # Useful options for wav data to pull
                     file_name = bext_metadata.originator
-                    device_serial = bext_metadata.originator_ref
-                    file_rec_date = bext_metadata.originator_date
                     start_tc = bext_metadata.originator_time
-                    file_time_ref = bext_metadata.time_reference # number of samples - referenced after midnight
-                    file_description = bext_metadata.description
-                    file_coding_history = bext_metadata.coding_history ## returned nothing on A20 mini
-                                # The coding_history is designed to contain a record of every conversion performed on the audio file.
+                    file_time_ref = bext_metadata.time_reference  # Number of samples - referenced after midnight
                     sample_rate = general_metadata.sample_rate
-                    bit_depth = general_metadata.bits_per_sample
-                    audio_format = general_metadata.audio_format # returns 3 for some reason
-                    samples = chunk_metadata.frame_count # total samples
+                    samples = chunk_metadata.frame_count  # Total samples
                     bytes = chunk_metadata.byte_count
 
-
                     file_megabytes = int(bytes) / 1048576
-                    file_run_time_float = samples / sample_rate # seconds with decimal places
+                    file_run_time_float = samples / sample_rate  # Seconds with decimal places
                     file_run_time_int = round(file_run_time_float)
-                    time_delta = datetime.timedelta(seconds=file_run_time_int) # hours minutes seconds
+                    time_delta = datetime.timedelta(seconds=file_run_time_int)  # Hours, minutes, seconds
 
                     file_info = {
-                        "count" : counter,
-                        "file_name" : file_name,
-                        "mb" : round(file_megabytes, 2),
-                        "length" : time_delta,
-                        "start_tc" : start_tc
+                        "count": counter,
+                        "file_name": file_name,
+                        "mb": round(file_megabytes, 2),
+                        "length": time_delta,
+                        "start_tc": start_tc,
                     }
 
                     self.timeref = file_time_ref
                     self.sample_rate = sample_rate
 
-                    # add anything yu want to see here
+                    # Add anything you want to see here
                     print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
 
                     counter += 1
                     self.wav_list.append(file_info)
-            return self.wav_list
-        else:
-            print("whatever")
+
+        return self.wav_list
+
 
 
 if __name__=="__main__":

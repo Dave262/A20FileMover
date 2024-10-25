@@ -7,8 +7,7 @@ from datetime import datetime
 from typing import Union, Callable
 import wavinfo
 from wavinfo import WavInfoReader
-# from controllers.macos_drive_controller_v2 import FileReport
-
+from app.py import app.py
 from tqdm import tqdm
 
 
@@ -35,10 +34,13 @@ class MainController:
       print(f"Destination path : {folder_path}")
       return folder_path
     
+   
     
     def select_A20_path(self,) -> str:
       tx_path: str = filedialog.askdirectory(initialdir="/home/david/Python_Projects/", title="please select your A20 pack")
       return tx_path
+  
+  
     
     def match_files_to_folder(self, folder_path: str, tx_path: str) -> None:
       """
@@ -66,45 +68,64 @@ class MainController:
             for folder in folder_dict:
               if folder.lower() in file.lower():# only return wav files
                 move_dict[os.path.join(tx_path, file)] = os.path.join(folder_path, folder)
-           
-            
-        
+   
         for key, value in move_dict.items():
           print(f"YO YO {key} : {value}")
           
       print(move_dict)
       return move_dict
-        
-    def move_files(self, move_dict):
-      if move_dict:
-        print("Moving files...")
-        try:
-          print(move_dict)
-          for file_path, folder_path in move_dict.items():
-            print(f"Attempting to move {file_path} to {folder_path}") 
-            shutil.move(file_path, folder_path)
-            print(f"Moved {file_path} to {folder_path}")
-          
 
   
         
+    def move_files(self, move_dict) -> None:
+      if move_dict:
+        print("Moving files...")
+        try:
+          for file_path, folder_path in move_dict.items():
+            file_size: int = os.path.getsize(file_path)
+            print(f"Starting copy of {file_path} with size {file_size/1048576:.1f} mb")
+            
+            destination_file_path = os.path.join(folder_path, os.path.basename(file_path))
+            
+            with open(file_path, 'rb') as src_file, open(destination_file_path, 'wb') as dst_file:
+              with tqdm(total=file_size, desc=f"Copying {file_path}", unit='B', unit_scale=True) as progress_bar:
+                total_bytes_copied = 0 
+                for chunk in iter(lambda: src_file.read(1024 * 1024), b''):
+                    dst_file.write(chunk)
+                    total_bytes_copied += len(chunk)
+                    progress_bar.update(len(chunk))
+                    self.update_custom_progress_bar(total_bytes_copied, file_size)
+            
+            time.sleep(1)
+            
+            if os.path.exists(destination_file_path):
+              os.remove(file_path)
+              print(f"Moved {file_path} to {folder_path}")
+            else:
+              print("ERROR: file not present in dst")
+          
         except Exception as e:
           print(f"Error moving files: {str(e)}")
       else:
         print("no files to move")
           
           
+    def update_custom_progress_bar(self, copied, total) -> None:
+      bar_length = 24  # Length of the bar (number of segments)
+      filled_length = int(bar_length * copied // total)  # Calculate how many segments are filled
+      bar = '|' * filled_length + '-' * (bar_length - filled_length)  # Create the bar
+      progress_string = f'\r[{bar}] {copied / 1048576:.1f} MB of {total / 1048576:.1f} MB'  # Print the progress bar
+      return progress_string
       
-      
-      
-        
+  
 
 if __name__ == "__main__":
     controller = MainController()
     # dict = controller.match_files_to_folder
     date = controller.global_time()
     file_match = controller.match_files_to_folder(
-      "/Users/davidross/Documents/A20_Test_Folders/Bodypack_Folders", 
-      "/Users/davidross/Documents/A20_Test_Folders/A20 mount"
+      "/home/david/Python_Projects/Fake_Folders/", 
+      "/home/david/Python_Projects/Fake_A20_Bodypack/"
       )
     controller.move_files(file_match)
+    # controller.update_custom_progress_bar()
