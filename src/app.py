@@ -6,6 +6,8 @@ from utils.enums import Colour
 from controllers.main_controller_v2 import MainController
 from controllers.macos_drive_controller_v2 import FileReport
 from controllers.file_storage import FileInfo
+from controllers.class_based_files import File
+from controllers.wav_info_get import WavInfoGet
 import logging
 import time
 import threading
@@ -37,6 +39,8 @@ class App(ctk.CTk):
         self._controller = MainController(self.print_progress) # print progress callback
 
         self._file_store = FileInfo()
+        self._class_based_files = File(None,None, None, None, None, None, None, None)
+        self._wav_info_get = WavInfoGet()
 
 
         self.grid_rowconfigure((0), weight=0)
@@ -108,7 +112,7 @@ class App(ctk.CTk):
         self.options_label.pack(padx=5, pady=5)
         self.options_label.configure(text="Options", font=("Inclusive Sans", 20))
 
-        self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_a20_sel_to_textbox)
+        self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_select)
         self.A20_path_button.pack(pady=10)
         self.A20_path_button.configure(fg_color=Colour.BUTTON.value)
 
@@ -203,11 +207,35 @@ class App(ctk.CTk):
 #-----------------------------------------
 # Handle manual selection of transmitter
 #------------------------------------------
+    def manual_select(self):
+        path = self._controller.select_A20_path()
+        if path:
+            self._class_based_files.load_files(path)
+        else:
+            print("No path selected.")
+
+        
+        recieved_files = self._wav_info_get.info_getter(self._class_based_files)
+
+        print(recieved_files)
+        
+
+
+
+
+
+
+
+
+
 
     def manual_a20_sel_to_textbox(self) -> None:
           # Clear the text box immediately
         path = self._controller.select_A20_path()
 
+        
+        
+        
         if path:
             # print(f"manual sel path : {path}")
             self.A20_path: str = path
@@ -231,6 +259,8 @@ class App(ctk.CTk):
                     # display_text: str = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']:.2f} MB : length-{file_info['length']} : start tc-{file_info['start_tc']}\n"
                     self.a20_listbox.insert("end", display_text)
                     count = count + 1
+
+
 
             else:
                 print("No files found in the selected directory.")
