@@ -27,7 +27,7 @@ class File:
     # audio_folder = "src/audio/"
     @classmethod
     def load_files(self, audio_folder):
-        files = []
+        current_files: list = []
         file_report = WavInfoGet()
         try:
             for file_name in os.listdir(audio_folder):      
@@ -35,7 +35,7 @@ class File:
                     file_path = os.path.join(audio_folder, file_name)
                     
                     info_getter = file_report.info_getter(file_path)
-                    # print(file_path)
+
                     
                     name, type = os.path.splitext(file_name)
     #----------------------
@@ -48,7 +48,7 @@ class File:
                         sample_rate = info_getter["sample_rate"]
                         bit_depth = info_getter["bit_depth"]
                         
-                        # bext_info = info_getter["bext_info"]
+
                         
                     else:
                         print("Cant access info_getter")
@@ -64,12 +64,13 @@ class File:
                         bit_depth=bit_depth
                         )
             
-                    files.append(file_instance)
+                    current_files.append(file_instance)
+                    
                     
         except FileNotFoundError:
             print(f"Directory {audio_folder} not found.")
-    
-        return files
+        
+        return current_files
 
 
 # file_instances = File.load_files(audio_folder)

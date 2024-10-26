@@ -1,18 +1,22 @@
 from wavinfo import WavInfoReader
 import wavinfo
 import datetime
+import os
+import re
 
 
 class WavInfoGet:
     def __init__(self):
         super().__init__()
 
-    def info_getter(self, passed_file):
+    def info_getter(self, passed_file) -> dict:
         # self.wav_list = []  # Clear the list at the beginning
        
 
         if passed_file:
             info = WavInfoReader(passed_file)
+
+            file_name = os.path.basename(passed_file)
             
             # time.sleep(0.01)
             bext_metadata = info.bext
@@ -37,8 +41,16 @@ class WavInfoGet:
             file_run_time_int = round(file_run_time_float)
             time_delta = datetime.timedelta(seconds=file_run_time_int)  # Hours, minutes, seconds
 
+
+        # Add more patterns here if needed
+
+            match = re.search(r"sSPEED=([\d.]+-ND)", description)
+            frame_rate = match.group(1).replace("0", "") if match else None # only strips from begining
+
+
             file_info = {
         
+                "file_name": file_name, 
                 "talent_name": talent_name,
                 "size": round(file_megabytes, 2),
                 "length": time_delta,
@@ -46,7 +58,7 @@ class WavInfoGet:
                 "bit_depth": bit_depth,
                 "sample_rate": sample_rate,
                 "info": orig_date,
-                "description": description,
+                "frame_rate": frame_rate,
                 "product_id": product_id,
                 "rec_date": orig_date
             }

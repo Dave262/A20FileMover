@@ -211,43 +211,57 @@ class App(ctk.CTk):
     def manual_select(self):
         path = self._controller.select_A20_path()
         if path:
-            file_instances = self._class_based_files.load_files(path)
+            current_files = self._class_based_files.load_files(path)
             self.a20_listbox.delete(0, "end")
             self.file_paths = []  # List to store file paths
-            for file_instance in file_instances:
+            
+            
+            for file_instance in current_files:
                 file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
-                display_text: str = f"{file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']} {file_dict["rec_date"]}"
+                display_text: str = f"{file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
                 self.a20_listbox.insert("end", display_text)
                 self.file_paths.append(file_instance.file_path)  # Store the file path
                 print(f"success! loaded {file_instance}")
         else:
             print("No path selected.")
 
-    def add_to_details(self, item):
-        i = self.a20_listbox.curselection()  # gets the selected item index in the listbox
 
-        if isinstance(i, (list, tuple)) and i:
-            selected_index = i[0]  # Get the first selected index
-        elif isinstance(i, int):
-            selected_index = i
-        else:
-            print("No item selected.")
-            return
+#------------------------------------------
+# Add to details: 
+#------------------------------------------
+
+    def add_to_details(self):
+        i: tuple = self.a20_listbox.curselection()  # gets the selected item index in the listbox
+
+        selected_index: tuple = i
 
         # Ensure selected_index is an integer
         if isinstance(selected_index, int):
-            selected_file_path = self.file_paths[selected_index]  # Retrieve the file path
+            selected_file_path: str = self.file_paths[selected_index]  # Retrieve the file path
             self._wav_info_get.info_getter(selected_file_path)  # Use the file path
 
-            print(f"File number {selected_index + 1}, Path: {selected_file_path}")
+            print(f"File number {selected_index}, Path: {selected_file_path}")
+
+            file_dict: dict = self._wav_info_get.info_getter(selected_file_path)
+            display_text: str = (
+                    f"File name: {file_dict['file_name']}\n"
+                    f"Talent: {file_dict['talent_name']}\n"
+                    f"Runtime: {file_dict['length']}\n"
+                    f"Size: {file_dict['size']} mb\n"
+                    f"Rec date: {file_dict["rec_date"]}\n"
+                    f"Frame rate: {file_dict["frame_rate"]}\n"
+                    f"Sample rate: {file_dict["sample_rate"]} hz\n"
+                    f"Bit depth: {file_dict["bit_depth"]}"
+            )
+
             self.file_info_textbox.delete("1.0", "end")
-            self.file_info_textbox.insert("2.0", f"File Number: {selected_index}")
+            self.file_info_textbox.insert("2.0", display_text)
         else:
             print("Error: selected_index is not an integer.")
             
-
-
-
+#------------------------------------------
+#
+#----------------------------------------------
 
     def update_label_with_folder_path(self) -> None:
         self.folder_path: str = self._controller.folder_select_path()
@@ -312,6 +326,9 @@ class App(ctk.CTk):
 
     def clear_textbox(self) -> None:
         self.a20_listbox.delete(0, "end")
+
+
+
 
 
     def call_move_files(self) -> None:
