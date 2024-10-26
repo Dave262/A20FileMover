@@ -11,13 +11,16 @@ class WavInfoGet:
 
     def info_getter(self, passed_file):
         # self.wav_list = []  # Clear the list at the beginning
+       
+
         if passed_file:
-            info = wavinfo.WavInfoReader(passed_file)  
+            info = WavInfoReader(passed_file)
+            
             # time.sleep(0.01)
             bext_metadata = info.bext
             general_metadata = info.fmt  # Sample rate, bit depth, etc.
             chunk_metadata = info.data
-
+            bullet_metadata = info.info
             # Useful options for wav data to pull
             talent_name = bext_metadata.originator
             
@@ -26,7 +29,10 @@ class WavInfoGet:
             sample_rate = general_metadata.sample_rate
             samples = chunk_metadata.frame_count  # Total samples
             bytes = chunk_metadata.byte_count
-            # path = os.path.join(self.file_list)
+            bit_depth = general_metadata.bits_per_sample
+            orig_date = bext_metadata.originator_date
+            description = bext_metadata.description
+            product_id = bext_metadata.originator_ref
 
             file_megabytes = int(bytes) / 1048576
             file_run_time_float = samples / sample_rate  # Seconds with decimal places
@@ -38,21 +44,20 @@ class WavInfoGet:
                 "size": round(file_megabytes, 2),
                 "length": time_delta,
                 "start_tc": start_tc,
-                "bit depth": general_metadata,
+                "bit_depth": bit_depth,
                 "sample_rate": sample_rate,
-
-            
+                "info": orig_date,
+                "description": description,
+                "product_id": product_id
             }
 
             self.timeref = file_time_ref
             self.sample_rate = sample_rate
             
-         
-            # Add anything you want to see here
-            # print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
 
-            # counter += 1
-            # self.wav_list.append(file_info)
-            
-            return file_info 
+            print(file_info)
+            return file_info # dict
 # return self.wav_list
+if __name__=="__main__":
+    wav_info = WavInfoGet()
+    wav_info.info_getter("src/audio/Brent-240930110056.wav")

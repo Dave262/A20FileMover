@@ -253,8 +253,6 @@ class App(ctk.CTk):
 
 
 
-
-
     def update_label_with_folder_path(self) -> None:
         self.folder_path: str = self._controller.folder_select_path()
 
