@@ -17,12 +17,10 @@ class File:
         self.sample_rate = sample_rate
         self.bit_depth = bit_depth 
 
+# __repr__ tells the program how to show instances of the class. This makes them print as a string of specified elements rather than an object
 
-
-    # def __repr__(self):
-    #         return (f"File: name={self.name}, talent={self.talent}, type={self.type}, "
-    #                 f"sample_rate={self.sample_rate}, bit_depth={self.bit_depth}, "
-    #                 f"size={self.size}, length={self.length}, file_path={self.file_path})")
+    def __repr__(self):
+            return (f"File: name={self.name}, type={self.type}")
 
 
 
@@ -37,6 +35,7 @@ class File:
                     file_path = os.path.join(audio_folder, file_name)
                     
                     info_getter = file_report.info_getter(file_path)
+                    # print(file_path)
                     
                     name, type = os.path.splitext(file_name)
     #----------------------
@@ -78,7 +77,7 @@ class File:
 
 #-------------------------------
 # To access the output you have to loop through file_instances
-#-------------------------------
+#-------------------------------ModuleNotFoundError: No module named 'controllers'
 # for file in file_instances:
 #      print(f"{file.name}, {file.talent}, {file.type}, {file.sample_rate}, {file.bit_depth}, {file.size}, {file.length}, {file.file_path}")
    

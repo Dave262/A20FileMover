@@ -1,6 +1,4 @@
 from wavinfo import WavInfoReader
-import os
-import logging
 import wavinfo
 import datetime
 
@@ -40,6 +38,7 @@ class WavInfoGet:
             time_delta = datetime.timedelta(seconds=file_run_time_int)  # Hours, minutes, seconds
 
             file_info = {
+        
                 "talent_name": talent_name,
                 "size": round(file_megabytes, 2),
                 "length": time_delta,
@@ -48,14 +47,15 @@ class WavInfoGet:
                 "sample_rate": sample_rate,
                 "info": orig_date,
                 "description": description,
-                "product_id": product_id
+                "product_id": product_id,
+                "rec_date": orig_date
             }
 
             self.timeref = file_time_ref
             self.sample_rate = sample_rate
             
 
-            print(file_info)
+            # print(file_info)
             return file_info # dict
 # return self.wav_list
 if __name__=="__main__":

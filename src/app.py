@@ -127,7 +127,7 @@ class App(ctk.CTk):
 
         self.a20_listbox = lb.CTkListbox(self.frame_middle,
                                          height=300,
-                                         command=self.add_to_playback)
+                                         command=self.add_to_details)
 
         self.a20_listbox.pack(fill="both", pady=0, padx=10)
         self.a20_listbox.insert(0, "Files will show here...")
@@ -173,7 +173,7 @@ class App(ctk.CTk):
         self.options_frame_mid.pack(side="bottom", pady=10, padx=1)
         self.options_frame_mid.configure(fg_color="transparent")
 
-        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show todays", command=self.add_to_playback)
+        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show todays", command=None)
         self.extra_button.pack(side="left", fill="x", padx=5, pady=0)
         self.extra_button.configure(fg_color=Colour.BUTTON.value)
 
@@ -207,79 +207,45 @@ class App(ctk.CTk):
 #-----------------------------------------
 # Handle manual selection of transmitter
 #------------------------------------------
+
     def manual_select(self):
         path = self._controller.select_A20_path()
         if path:
-            self._class_based_files.load_files(path)
+            file_instances = self._class_based_files.load_files(path)
+            self.a20_listbox.delete(0, "end")
+            self.file_paths = []  # List to store file paths
+            for file_instance in file_instances:
+                file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
+                display_text: str = f"{file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']} {file_dict["rec_date"]}"
+                self.a20_listbox.insert("end", display_text)
+                self.file_paths.append(file_instance.file_path)  # Store the file path
+                print(f"success! loaded {file_instance}")
         else:
             print("No path selected.")
 
-        
-        recieved_files = self._wav_info_get.info_getter(self._class_based_files)
+    def add_to_details(self, item):
+        i = self.a20_listbox.curselection()  # gets the selected item index in the listbox
 
-        print(recieved_files)
-        
-
-
-
-
-
-
-
-
-
-
-    def manual_a20_sel_to_textbox(self) -> None:
-          # Clear the text box immediately
-        path = self._controller.select_A20_path()
-
-        
-        
-        
-        if path:
-            # print(f"manual sel path : {path}")
-            self.A20_path: str = path
-
-            # Get the list of files from the selected path
-            received_file_list: list = self._usb_controller.info_getter(path)
-            # print(f"Received files: {received_file_list}")
-
-            self.a20_listbox.delete(0, "end")
-
-            # Check if any files were received and insert them into the text box
-            if received_file_list:
-                count = 0
-                # self.a20_listbox.delete(0, "end")# Ensure the list is not empty
-                for file_info in received_file_list:
-                    stored_info: dict = {
-                        "count" : f"{count}",
-                        "info" : file_info['length']
-                    }
-                    display_text: str = f"{file_info['count']}    {file_info['file_name']}     {file_info['length']}     {file_info['start_tc']}     {file_info['mb']:.2f} MB"
-                    # display_text: str = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']:.2f} MB : length-{file_info['length']} : start tc-{file_info['start_tc']}\n"
-                    self.a20_listbox.insert("end", display_text)
-                    count = count + 1
-
-
-
-            else:
-                print("No files found in the selected directory.")
+        if isinstance(i, (list, tuple)) and i:
+            selected_index = i[0]  # Get the first selected index
+        elif isinstance(i, int):
+            selected_index = i
         else:
-            print("ERROR: No path selected.")
+            print("No item selected.")
+            return
 
-            return stored_info
+        # Ensure selected_index is an integer
+        if isinstance(selected_index, int):
+            selected_file_path = self.file_paths[selected_index]  # Retrieve the file path
+            self._wav_info_get.info_getter(selected_file_path)  # Use the file path
 
+            print(f"File number {selected_index + 1}, Path: {selected_file_path}")
+            self.file_info_textbox.delete("1.0", "end")
+            self.file_info_textbox.insert("2.0", f"File Number: {selected_index}")
+        else:
+            print("Error: selected_index is not an integer.")
+            
 
-    def add_to_playback(self, item):
-
-
-        i = self.a20_listbox.curselection() # gets the selected item index in the listbox
-
-        self._file_store.hold_files( item)
-
-        print(f"File number {i + 1}")
-        self.file_info_textbox.delete("1.0", "end")
-        self.file_info_textbox.insert("2.0", f"File Number: {i}")
 
 
 
