@@ -8,7 +8,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 class FileReport:
     def __init__(self):
         super().__init__()
@@ -26,7 +25,7 @@ class FileReport:
         logging.info("Checking system drives...")
 
         for drive in system_drives:  # loop through all system drives checking for exfat type
-            logging.info(f"Found drive: {drive.device}, Type: {drive.fstype}")
+            # logging.info(f"Found drive: {drive.device}, Type: {drive.fstype}")
             if drive.fstype == "exfat":
                 self.file_path = drive.mountpoint
                 exfat_present = True
@@ -61,21 +60,19 @@ class FileReport:
         for tx in path_list:
             try:
                 self.file_list = os.listdir(tx)  # Get the list of files in the directory
-                print(f"HELLO {self.file_list}")
             except Exception as e:
                 logging.error(f"Failed to list directory {tx}: {e}")
                 continue
-
-            for wav_file in self.file_list:
-                if wav_file.lower().endswith('.wav'):
-                    # Every File
+            for file in self.file_list:
+                # if file.lower().endswith('.wav'):
+                    wav_file = file
                     try:
                         info = wavinfo.WavInfoReader(os.path.join(tx, wav_file))
                     except Exception as e:
                         logging.error(f"Failed to read {wav_file}: {e}")
                         continue
 
-                    time.sleep(0.05)
+                    # time.sleep(0.01)
                     bext_metadata = info.bext
                     general_metadata = info.fmt  # Sample rate, bit depth, etc.
                     chunk_metadata = info.data
@@ -87,6 +84,7 @@ class FileReport:
                     sample_rate = general_metadata.sample_rate
                     samples = chunk_metadata.frame_count  # Total samples
                     bytes = chunk_metadata.byte_count
+                    # path = os.path.join(self.file_list)
 
                     file_megabytes = int(bytes) / 1048576
                     file_run_time_float = samples / sample_rate  # Seconds with decimal places
@@ -99,13 +97,15 @@ class FileReport:
                         "mb": round(file_megabytes, 2),
                         "length": time_delta,
                         "start_tc": start_tc,
+                        "bit depth": general_metadata
+                        # "path" : path
                     }
 
                     self.timeref = file_time_ref
                     self.sample_rate = sample_rate
 
                     # Add anything you want to see here
-                    print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
+                    # print(f"{counter}-{wav_file} : {file_name} : {round(file_megabytes, 2)} MB : {time_delta} : start tc-{start_tc}")
 
                     counter += 1
                     self.wav_list.append(file_info)

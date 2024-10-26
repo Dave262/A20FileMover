@@ -1,14 +1,14 @@
 import os
 import shutil
 import re
+import hashlib
 from tkinter import filedialog
 import time
 from datetime import datetime
 from typing import Union, Callable
-import wavinfo
+# import wavinfo
 from wavinfo import WavInfoReader
 
- 
 from tqdm import tqdm
 
 
@@ -19,6 +19,9 @@ class MainController:
         
         self.update_gui_callback = update_gui_callback  
 
+#---------------
+# Get Date
+#---------------
 
     def global_time(self) -> str: 
       """
@@ -32,6 +35,9 @@ class MainController:
       print(local_date)
       return local_date
 
+#------------------
+# File Functions 
+#------------------
 
     def folder_select_path(self) -> str:
       folder_path: str = filedialog.askdirectory(initialdir="/home/david/Python_Projects/Fake_Folders/", title="Select destination folder")
@@ -39,7 +45,6 @@ class MainController:
       return folder_path
     
    
-    
     def select_A20_path(self,) -> str:
       tx_path: str = filedialog.askdirectory(initialdir="/home/david/Python_Projects/", title="please select your A20 pack")
       return tx_path
@@ -49,7 +54,7 @@ class MainController:
     def match_files_to_folder(self, folder_path: str, tx_path: str) -> None:
       """
       Makes a dictionary of the tx_path and folder_path names : paths and then matches them based on names
-      it then creates a new dictionary 'move_dict' which is each file and the path to the folder it matches.
+      it then creates a new dictionary 'file_and_folder_dict' which is each file and the path to the folder it matches.
 
       Args:
           folder_path (str): can be user selected
@@ -65,49 +70,87 @@ class MainController:
       
 # Transmitter dictionary        
         tx_files: list = os.listdir(tx_path) # this will include hidden files and non-wav files
-        move_dict = {}
+        file_and_folder_dict = {} # init dict
         
         for file in tx_files:
           if file.endswith (".wav"):
             for folder in folder_dict:
               if folder.lower() in file.lower():# only return wav files
-                move_dict[os.path.join(tx_path, file)] = os.path.join(folder_path, folder)
+                file_and_folder_dict[os.path.join(tx_path, file)] = os.path.join(folder_path, folder)
    
-        for key, value in move_dict.items():
-          print(f"YO YO {key} : {value}")
-          
-      print(move_dict)
-      return move_dict
+        for key, value in file_and_folder_dict.items(): # full file path and full folder path 
+      # print(file_and_folder_dict)
+          return file_and_folder_dict
 
-  
+
+    def calculate_checksum(self, file_path, hash_algo='md5') -> str: # calculating checksum for src and dst before deleting files. 
+      """
+      MD5 checksum performed before the file move and after
+
+      Args:
+          file_path (_type_): _description_
+          hash_algo (str, optional): _description_. Defaults to 'md5'.
+
+      Returns:
+          str: _description_
+      """
+      hash_func = hashlib.new(hash_algo)
+      with open(file_path, 'rb') as f:
+          for chunk in iter(lambda: f.read(1024 * 1024), b''):
+              hash_func.update(chunk)
+      return hash_func.hexdigest()
+
         
-    def move_files(self, move_dict) -> None:
-      if move_dict:
+    def move_files(self, file_and_folder_dict) -> None:
+      """
+          Moves files to their respective folders based on name matching
+          
+          Parameters:
+              file_and_folder_dict (dict): A dictionary of file paths and their corresponding destination folders.
+          
+          Returns:
+              None
+          
+          Raises:
+              Exception: If there is an error moving the files.
+          """
+      if file_and_folder_dict:
         print("Moving files...")
         try:
-          for file_path, folder_path in move_dict.items():
+          for file_path, folder_path in file_and_folder_dict.items():
             file_size: int = os.path.getsize(file_path)
             file_name = os.path.basename(file_path)
-            print(f"Starting copy of {file_path} with size {file_size/1048576:.1f} mb")
+            print(f"Copying - {file_name} with size {file_size/1048576:.1f} mb")
+            
+            source_checksum = self.calculate_checksum(file_path, "md5")
+          
             
             destination_file_path = os.path.join(folder_path, os.path.basename(file_path))
             
             with open(file_path, 'rb') as src_file, open(destination_file_path, 'wb') as dst_file:
-              with tqdm(total=file_size, desc=f"Copying {file_path}", unit='B', unit_scale=True) as progress_bar:
+              with tqdm(total=file_size, desc="Progress: ", unit='B', unit_scale=True) as progress_bar:
                 total_bytes_copied = 0 
                 for chunk in iter(lambda: src_file.read(1024 * 1024), b''):
                     dst_file.write(chunk)
+                    
+                    
                     total_bytes_copied += len(chunk)
                     progress_bar.update(len(chunk))
-                    # progress_string = self.update_custom_progress_bar(total_bytes_copied, file_size, file_name)
+                    
                     self.update_gui_callback(total_bytes_copied, file_size, os.path.basename(file_path))
                 self.update_gui_callback(file_size, file_size, os.path.basename(file_path))
+            destination_checksum = self.calculate_checksum(destination_file_path, "md5")
             
-            time.sleep(1)
+            if source_checksum != destination_checksum:
+              raise Exception(f"Checksum mismatch for {file_name}, copy might be corrupted.")
+            else:
+              print(f"Checksum verified for {file_name}")
             
+            time.sleep(1) # fixes issue where file wouldn't be removed after copy 
             if os.path.exists(destination_file_path):
               os.remove(file_path)
               print(f"Moved {file_path} to {folder_path}")
+              print(f"REMOVED {file_path}")
             else:
               print("ERROR: file not present in dst")
           
@@ -115,23 +158,26 @@ class MainController:
           print(f"Error moving files: {str(e)}")
       else:
         print("no files to move")
-    
-    
-    
       
     
     def update_custom_progress_bar(self, copied, total, file_name) -> None:
-
-      
-      bar_length = 36  # Length of the bar (number of segments)
+       
+      bar_length = 75  # Length of the bar (number of segments)
       filled_length = int(bar_length * copied // total)  # Calculate how many segments are filled
-      bar = '|' * filled_length + '-' * (bar_length - filled_length)  # Create the bar
+      bar = '|' * filled_length + ' ' * (bar_length - filled_length)  # Create the bar
       progress_string = f"Copying : {file_name}\n[{bar}]\n {copied / 1048576:.1f} MB of {total / 1048576:.1f} MB"  # Print the progress bar
       
       return progress_string       
 
-      
-  
+#-----------------------------
+# Info storage
+#-----------------------------
+
+
+
+
+
+
 
 if __name__ == "__main__":
     controller = MainController()
