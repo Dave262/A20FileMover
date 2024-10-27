@@ -5,9 +5,9 @@ import sys
 import threading
 
 class AudioPlay:
-    chunk = 1024  # Number of frames per chunk
+    chunk = 512  # Number of frames per chunk
 
-    def __init__(self, file):
+    def __init__(self, file, update_slider_callback=None):
         """ Init audio stream """ 
         self.data, self.samplerate = sf.read(file, dtype='float32')
         print("Sample rate:", self.samplerate)
@@ -20,6 +20,7 @@ class AudioPlay:
         )
         self.position = 0  # To keep track of playback position
         self.is_playing = False  # Flag to control playback
+        self.update_slider_callback = update_slider_callback
 
     def play(self):
         """ Play entire file in chunks """
@@ -35,11 +36,24 @@ class AudioPlay:
 
                 # Update position
                 self.position = end_position
+
+                # Update slider
+                if self.update_slider_callback:
+                    self.update_slider_callback(self.position / len(self.data) * 100)
+            
+                if not self.is_playing:
+                    break
+        
+        
+        
         except KeyboardInterrupt:
             print("Playback interrupted by user.")
+        finally:
+            print("Playback finished or stopped.")
 
     def stop(self):
         """ Stop playback """
+        print("stopping playback")
         self.is_playing = False
 
     def close(self):

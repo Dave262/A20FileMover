@@ -162,9 +162,9 @@ class MainController:
     
     def update_custom_progress_bar(self, copied, total, file_name) -> None:
        
-      bar_length = 75  # Length of the bar (number of segments)
+      bar_length = 30  # Length of the bar (number of segments)
       filled_length = int(bar_length * copied // total)  # Calculate how many segments are filled
-      bar = '|' * filled_length + ' ' * (bar_length - filled_length)  # Create the bar
+      bar = '|' * filled_length + '.' * (bar_length - filled_length)  # Create the bar
       progress_string = f"Copying : {file_name}\n[{bar}]\n {copied / 1048576:.1f} MB of {total / 1048576:.1f} MB"  # Print the progress bar
       
       return progress_string       

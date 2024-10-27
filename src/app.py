@@ -164,7 +164,7 @@ class App(ctk.CTk):
         self.terminal_textbox.configure(fg_color=Colour.BACKGROUND_DARK.value,
                                         border_width=1,
                                         border_color=Colour.OFF_WHITE.value,
-                                        font=("Inclusive Sans", 13)
+                                        font=("Hack Nerd Font Mono", 13)
                                         )
 
 
@@ -396,7 +396,6 @@ class App(ctk.CTk):
 
 
     def print_progress(self, copied, total, file_name) -> None:
-
         progress_bar = self._controller.update_custom_progress_bar(copied, total, file_name)
         self.terminal_textbox.delete("1.0", "end")
         self.terminal_textbox.insert("end", progress_bar + '\n')
@@ -416,19 +415,16 @@ class App(ctk.CTk):
             selected_file_path: str = self.file_paths[selected_index]
             if selected_file_path:
                 print(f"Gday Slugger - {selected_file_path}")
-                self.audio_player = AudioPlay(selected_file_path)
-
+                self.audio_player = AudioPlay(selected_file_path, self.update_slider)
                 self.playback_thread = threading.Thread(target=self.audio_player.play)
                 self.playback_thread.start()
-
-
-
-            # try:
-            #     audio_player.play()  # Play the audio
-            # finally:
-            #     audio_player.close()
         else:
             print("No file selected")
+
+
+    def update_slider(self, value):
+        """Update the slider position."""
+        self.after(0, self.playhead_slider.set, value)
 
 
     def stop_playback(self):
