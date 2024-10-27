@@ -9,6 +9,7 @@ from controllers.file_storage import FileInfo
 from controllers.class_based_files import File
 from controllers.wav_info_get import WavInfoGet
 from controllers.audio_playback import AudioPlay
+from controllers.py_dub_playback import PlayBack
 import logging
 import time
 import threading
@@ -425,7 +426,6 @@ class App(ctk.CTk):
 #----------------------------------
 
     def play_selected_audio(self) -> None:
-        """Play the selected audio file."""
         index: tuple = self.a20_listbox.curselection() 
         selected_index: tuple = index
         if isinstance(selected_index, int):
@@ -433,16 +433,16 @@ class App(ctk.CTk):
             selected_file_path: str = self.file_paths[selected_index]
             if selected_file_path:
                 print(f"Gday Slugger - {selected_file_path}")
-                self.audio_player = AudioPlay(selected_file_path, self.update_slider)
-                self.playback_thread = threading.Thread(target=self.audio_player.play)
-                self.playback_thread.start()
+                self.audio_player = PlayBack(selected_file_path)
+                # self.playback_thread = threading.Thread(target=self.audio_player)
+                # self.playback_thread.start()
         else:
             print("No file selected")
 
 
-    def update_slider(self, value):
-        """Update the slider position."""
-        self.after(0, self.playhead_slider.set, value)
+    # def update_slider(self, value):
+    #     """Update the slider position."""
+    #     self.after(0, self.playhead_slider.set, value)
 
 
     def stop_playback(self):
