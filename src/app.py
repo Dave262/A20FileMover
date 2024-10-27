@@ -21,6 +21,9 @@ import os
 
 class App(ctk.CTk):
     def __init__(self):
+        
+        
+
         super().__init__()
 
         self.audio_player = None
@@ -46,8 +49,8 @@ class App(ctk.CTk):
         self._file_store = FileInfo()
         self._class_based_files = File(None,None, None, None, None, None, None, None)
         self._wav_info_get = WavInfoGet()
-        file = "src/audio/Brent-241002112511.wav"
-        self._audio_playback = AudioPlay(file)
+
+        self.current_files: list = [] # the files from tx or manual
 
 
         self.grid_rowconfigure((0), weight=0)
@@ -117,7 +120,7 @@ class App(ctk.CTk):
 
         self.options_label = ctk.CTkLabel(self.options_frame)
         self.options_label.pack(padx=5, pady=5)
-        self.options_label.configure(text="Options", font=("Inclusive Sans", 20))
+        self.options_label.configure(text="Options", font=("Inclusive Sans", 15))
 
         self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_select)
         self.A20_path_button.pack(pady=10)
@@ -136,7 +139,7 @@ class App(ctk.CTk):
 
         self.options_label = ctk.CTkLabel(self.options_label_frame)
         self.options_label.pack(side="left", padx=10, pady=0)
-        self.options_label.configure(text="File List", font=("Inclusive Sans", 20))
+        self.options_label.configure(text="File list", font=("Inclusive Sans", 15))
 
 
         self.a20_listbox = lb.CTkListbox(self.frame_middle,
@@ -149,13 +152,17 @@ class App(ctk.CTk):
                                    border_color=Colour.OFF_WHITE.value,
                                    fg_color=Colour.BACKGROUND_DARK.value,
                                    hover_color=Colour.GREY.value,
-                                   highlight_color=Colour.BACKGROUND_COLOR.value,
-                                   font=("Inclusive Sans", 13)
+                                   highlight_color=Colour.BLUE.value,
+                                   font=("Reddit Mono", 13)
                                    )
 
-        self.info_label = ctk.CTkLabel(self.frame_right)
-        self.info_label.pack(padx=5, pady=10)
-        self.info_label.configure(text="Copy Window", font=("Inclusive Sans", 20))
+        self.copy_info_frame = ctk.CTkFrame(self.frame_right)
+        self.copy_info_frame.pack(padx=5, pady=5, fill="both")
+        self.copy_info_frame.configure(fg_color="transparent")
+
+        self.copy_info_label = ctk.CTkLabel(self.copy_info_frame)
+        self.copy_info_label.pack(side="left", padx=10, pady=0)
+        self.copy_info_label.configure(text="Copy window", font=("Inclusive Sans", 15))
 
 
         self.terminal_textbox = ctk.CTkTextbox(self.frame_right, height=80)
@@ -164,22 +171,27 @@ class App(ctk.CTk):
         self.terminal_textbox.configure(fg_color=Colour.BACKGROUND_DARK.value,
                                         border_width=1,
                                         border_color=Colour.OFF_WHITE.value,
-                                        font=("Hack Nerd Font Mono", 13)
+                                        font=("Reddit Mono", 13)
                                         )
 
 
-        self.file_info_label = ctk.CTkLabel(self.frame_right)
-        self.file_info_label.pack(padx=5, pady=5)
-        self.file_info_label.configure(text="selected file info", font=("Inclusive Sans", 20))
+        self.file_info_frame = ctk.CTkFrame(self.frame_right)
+        self.file_info_frame.pack(padx=5, pady=5, fill="both")
+        self.file_info_frame.configure(fg_color="transparent")
+        
+
+        self.file_info_label = ctk.CTkLabel(self.file_info_frame)
+        self.file_info_label.pack(side="left", padx=10, pady=0)
+        self.file_info_label.configure(text="File info", font=("Inclusive Sans", 15))
 
 
         self.file_info_textbox = ctk.CTkTextbox(self.frame_right, height=150)
-        self.file_info_textbox.pack(fill="both", pady=7, padx=10)
-        self.file_info_textbox.insert("2.0", "No folder selected...") # placeholder text
+        self.file_info_textbox.pack(fill="both", pady=0, padx=10)
+        self.file_info_textbox.insert("2.0", "File details...") # placeholder text
         self.file_info_textbox.configure(fg_color=Colour.BACKGROUND_DARK.value,
                                         border_width=1,
                                         border_color=Colour.OFF_WHITE.value,
-                                        font=("Inclusive Sans", 13)
+                                        font=("Reddit Mono", 13)
                                         )
 
 
@@ -187,7 +199,7 @@ class App(ctk.CTk):
         self.options_frame_mid.pack(side="bottom", pady=10, padx=1)
         self.options_frame_mid.configure(fg_color="transparent")
 
-        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show todays", command=None)
+        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show today", command=None)
         self.extra_button.pack(side="left", fill="x", padx=5, pady=0)
         self.extra_button.configure(fg_color=Colour.BUTTON.value)
 
@@ -231,7 +243,6 @@ class App(ctk.CTk):
             border_width=3,
             from_=0,
             to=100
-
         )
 
 #------------------------------------
@@ -257,25 +268,26 @@ class App(ctk.CTk):
         self.file_paths = []
         path = self._controller.select_A20_path()
         self.A20_path = ""
+        self.current_files: list = [] # empties existing list 
         if path:
             file_label_item = os.path.basename(path)
-            current_files = self._class_based_files.load_files(path)
+            self.current_files: list = self._class_based_files.load_files(path) # list of files for moving etc
             self.A20_path = path
             
             self.a20_listbox.delete(0, "end")
               # List to store file paths
-            if not current_files:
+            if not self.current_files:
                 self.a20_listbox.insert("end", "No files in selected path")
             else:
-                for file_instance in current_files:
+                for file_instance in self.current_files:
                     file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
-                    display_text: str = f"{counter}   {file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
+                    display_text: str = f"{counter} | {file_dict['talent_name']} | {file_dict['length']} | {file_dict['size']} | {file_dict["rec_date"]}"
                     self.a20_listbox.insert("end", display_text)
                     self.file_paths.append(file_instance.file_path)  # Store the file path
-                    self.options_label.configure(text=f"Directory: {file_label_item}", font=("Inclusive Sans", 20))
+                    self.options_label.configure(text=f"Directory: {file_label_item}")
                     print(f"success! loaded {file_instance}")
                     counter = counter + 1
-        
+              
         else:
             print("No path selected.")
 
@@ -351,18 +363,19 @@ class App(ctk.CTk):
         counter = 1
         self.file_paths = []
         self.A20_path = ""
+        self.current_files: list = []
         if a20_mount_point:
             file_label_item = os.path.basename(a20_mount_point)
 
-            current_files = self._class_based_files.load_files(a20_mount_point)
+            self.current_files = self._class_based_files.load_files(a20_mount_point)
             self.A20_path = a20_mount_point
             
             self.a20_listbox.delete(0, "end")
               # List to store file paths
-            if not current_files:
+            if not self.current_files:
                 self.a20_listbox.insert("end", "No files in selected path")
             else:
-                for file_instance in current_files:
+                for file_instance in self.current_files:
                     file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
                     display_text: str = f"{counter}   {file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
                     self.a20_listbox.insert("end", display_text)
@@ -379,7 +392,12 @@ class App(ctk.CTk):
 
     def clear_textbox(self) -> None:
         self.a20_listbox.delete(0, "end") 
-
+        self.a20_listbox.insert(0, "Files will show here...")
+        self.file_info_textbox.delete("1.0", "end")
+        self.file_info_textbox.insert("2.0", "File details...")
+        self.current_files: list = [] # empty the list 
+        print("current files cleared")
+        print(f"{self.current_files}")
 
 #-------------------------------------------------
 # Move the files to the folder
@@ -430,8 +448,8 @@ class App(ctk.CTk):
     def stop_playback(self):
         if self.audio_player:
             self.audio_player.stop()
-            if self.playback_thread:
-                self.playback_thread.join()  # Wait for the thread to finish
+            if self.playback_thread and self.playback_thread.is_alive():
+                self.playback_thread.join(timeout=1)  # Wait for the thread to finish
             self.audio_player.close()
 
 
