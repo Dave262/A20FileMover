@@ -41,8 +41,9 @@ class App(ctk.CTk):
 
         self.geometry("900x550")
         self.title("A20 TX File Mover")
-
+#-------------------------------
 # Controllers
+#-----------------------------------
         self._usb_controller = FileReport()
 
         self._controller = MainController(self.print_progress) # print progress callback
@@ -51,7 +52,13 @@ class App(ctk.CTk):
         self._class_based_files = File(None,None, None, None, None, None, None, None)
         self._wav_info_get = WavInfoGet()
 
+#--------------------
+# Globals
+#---------------------       
         self.current_files: list = [] # the files from tx or manual
+        
+
+
 
 
         self.grid_rowconfigure((0), weight=0)
