@@ -8,11 +8,13 @@ from controllers.macos_drive_controller_v2 import FileReport
 from controllers.file_storage import FileInfo
 from controllers.class_based_files import File
 from controllers.wav_info_get import WavInfoGet
+from controllers.audio_playback import AudioPlay
 import logging
 import time
 import threading
 import CTkListbox as lb
 import subprocess
+import os
 
 # when calling a function from any of the controller modules the syntax is
 # "self.[_reference to controller as listed in script].function
@@ -20,6 +22,9 @@ import subprocess
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        self.audio_player = None
+        self.playback_thread = None
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -41,6 +46,8 @@ class App(ctk.CTk):
         self._file_store = FileInfo()
         self._class_based_files = File(None,None, None, None, None, None, None, None)
         self._wav_info_get = WavInfoGet()
+        file = "src/audio/Brent-241002112511.wav"
+        self._audio_playback = AudioPlay(file)
 
 
         self.grid_rowconfigure((0), weight=0)
@@ -120,8 +127,15 @@ class App(ctk.CTk):
         self.folder_path_button.pack(pady=10)
         self.folder_path_button.configure(fg_color=Colour.BUTTON.value)
 
-        self.options_label = ctk.CTkLabel(self.frame_middle)
-        self.options_label.pack(padx=5, pady=10)
+
+        self.options_label_frame = ctk.CTkFrame(self.frame_middle)
+        self.options_label_frame.pack(padx=5, pady=10, fill="both")
+        self.options_label_frame.configure(fg_color="transparent")
+
+
+
+        self.options_label = ctk.CTkLabel(self.options_label_frame)
+        self.options_label.pack(side="left", padx=10, pady=0)
         self.options_label.configure(text="File List", font=("Inclusive Sans", 20))
 
 
@@ -181,59 +195,98 @@ class App(ctk.CTk):
         self.extra_button_two.pack(side="left", fill="x", padx=5, pady=0)
         self.extra_button_two.configure(fg_color=Colour.BUTTON.value, command=self.clear_textbox)
 
+
+        self.copy_files_button = ctk.CTkButton(self.frame_right, text="Copy Files to Folders", command=self.call_move_files)
+        self.copy_files_button.pack(fill="x", padx=5, pady=10)
+        self.copy_files_button.configure(fg_color=Colour.GREEN.value)
+    
+
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
         self.move_files_button.pack(side="bottom", fill="x", padx=5, pady=10)
         self.move_files_button.configure(fg_color=Colour.PINK.value)
         self.drive_buttons = {}
 
-
         self.playback_label = ctk.CTkLabel(self.frame_footer)
-        self.playback_label.pack(side="left", padx=5, pady=5)
-        self.playback_label.configure(text="Playback", font=("Inclusive Sans", 20))
+        self.playback_label.pack(side="left", padx=10, pady=5)
+        self.playback_label.configure(text="Playback", 
+                                      font=("Inclusive Sans", 20)
+                                      )
+
+        self.play_button = ctk.CTkButton(self.frame_footer, text="Play", width=40, height=30, command=self.play_selected_audio)
+        self.play_button.pack(side="left", padx=(60, 10), pady=10)
+        self.play_button.configure(fg_color=Colour.RED.value)
+
+        self.stop_button = ctk.CTkButton(self.frame_footer, text="Stop", width=40, height=30, command=self.stop_playback)
+        self.stop_button.pack(side="left", padx=(10, 10), pady=10)
+        self.stop_button.configure(fg_color=Colour.RED.value)
+
 
 
         self.playhead_slider = ctk.CTkSlider(self.frame_footer)
-        self.playhead_slider.pack(pady=20, padx=20)
+        self.playhead_slider.pack(side="left", pady=20, padx=20)
         self.playhead_slider.configure(
             height=20,
             width=600,
             button_color=Colour.PINK.value,
-            border_width=1,
+            border_width=3,
             from_=0,
             to=100
 
         )
+
+#------------------------------------
+# Folder selection 
+#--------------------------------
+
+    def update_label_with_folder_path(self) -> None:
+        self.folder_path: str = self._controller.folder_select_path()
+
+        if self.folder_path:
+            self.terminal_textbox.delete("1.0", "end")
+            self.terminal_textbox.insert("end", text=f"Destination:\n{self.folder_path}")
+        else:
+            print("No folder path selected.")
+
 
 #-----------------------------------------
 # Handle manual selection of transmitter
 #------------------------------------------
 
     def manual_select(self):
+        counter = 1
+        self.file_paths = []
         path = self._controller.select_A20_path()
+        self.A20_path = ""
         if path:
+            file_label_item = os.path.basename(path)
             current_files = self._class_based_files.load_files(path)
+            self.A20_path = path
+            
             self.a20_listbox.delete(0, "end")
-            self.file_paths = []  # List to store file paths
-            
-            
-            for file_instance in current_files:
-                file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
-                display_text: str = f"{file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
-                self.a20_listbox.insert("end", display_text)
-                self.file_paths.append(file_instance.file_path)  # Store the file path
-                print(f"success! loaded {file_instance}")
+              # List to store file paths
+            if not current_files:
+                self.a20_listbox.insert("end", "No files in selected path")
+            else:
+                for file_instance in current_files:
+                    file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
+                    display_text: str = f"{counter}   {file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
+                    self.a20_listbox.insert("end", display_text)
+                    self.file_paths.append(file_instance.file_path)  # Store the file path
+                    self.options_label.configure(text=f"Directory: {file_label_item}", font=("Inclusive Sans", 20))
+                    print(f"success! loaded {file_instance}")
+                    counter = counter + 1
+        
         else:
             print("No path selected.")
-
 
 #------------------------------------------
 # Add to details: 
 #------------------------------------------
 
-    def add_to_details(self):
-        i: tuple = self.a20_listbox.curselection()  # gets the selected item index in the listbox
+    def add_to_details(self, index):
+        index: tuple = self.a20_listbox.curselection()  # gets the selected item index in the listbox
 
-        selected_index: tuple = i
+        selected_index: tuple = index
 
         # Ensure selected_index is an integer
         if isinstance(selected_index, int):
@@ -256,23 +309,14 @@ class App(ctk.CTk):
 
             self.file_info_textbox.delete("1.0", "end")
             self.file_info_textbox.insert("2.0", display_text)
+            return selected_file_path
         else:
             print("Error: selected_index is not an integer.")
+            return None
             
 #------------------------------------------
-#
+# Automatic transmitter stuff
 #----------------------------------------------
-
-    def update_label_with_folder_path(self) -> None:
-        self.folder_path: str = self._controller.folder_select_path()
-
-        if self.folder_path:
-            self.terminal_textbox.delete("1.0", "end")
-            self.terminal_textbox.insert("end", text=f"Selected folder path:\n{self.folder_path}")
-        else:
-            print("No folder path selected.")
-
-
 
     def create_tx_buttons(self) -> None:
 
@@ -302,34 +346,44 @@ class App(ctk.CTk):
             logging.info("No transmitters connected, soz.")
 
 
-    def select_tx_button(self, a20_mount_point):# -> Any:# -> Any:# -> Any:
-        self.a20_listbox.delete(0, "end")
-        logging.info(f"Selected TX mount point: {a20_mount_point}")  # Log the selected mount point
-        if a20_mount_point:
-            received_file_list: str = self._usb_controller.info_getter(a20_mount_point)  # Retrieve the file list
-            logging.info(f"Received file list: {received_file_list}")  # Log the received file list
-            self.A20_path = a20_mount_point  # Store the selected mount point
 
-            try:
-                count: int = 0
-                for file_info in received_file_list:
-                    logging.info(f"Processing file info: {file_info}")  # Log each file info being processed
-                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : length-{file_info['length']} : start-{file_info['start_tc']}\n"
-                    count: int = count + 1
-                    self.a20_listbox.insert(f"{count}", display_text)  # Populate the text box
-                logging.info("File list populated in the text box.")  # Log successful population
-            except ValueError as e:
-                logging.error(f"Error loading A20 mount point: {e}")  # Log any errors encountered
+    def select_tx_button(self, a20_mount_point):
+        counter = 1
+        self.file_paths = []
+        self.A20_path = ""
+        if a20_mount_point:
+            file_label_item = os.path.basename(a20_mount_point)
+
+            current_files = self._class_based_files.load_files(a20_mount_point)
+            self.A20_path = a20_mount_point
+            
+            self.a20_listbox.delete(0, "end")
+              # List to store file paths
+            if not current_files:
+                self.a20_listbox.insert("end", "No files in selected path")
+            else:
+                for file_instance in current_files:
+                    file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
+                    display_text: str = f"{counter}   {file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
+                    self.a20_listbox.insert("end", display_text)
+                    self.file_paths.append(file_instance.file_path)  # Store the file path
+                    self.options_label.configure(text=f"Transmitter: {file_label_item}", font=("Inclusive Sans", 20))
+                    print(f"success! loaded {file_instance}")
+                    counter = counter + 1
+        
         else:
-            logging.warning("No mount point selected.")  # Log if no mount point is provided
-        return a20_mount_point
+            print("Transmitter not loading for some reason")
+    
+
+
 
     def clear_textbox(self) -> None:
-        self.a20_listbox.delete(0, "end")
+        self.a20_listbox.delete(0, "end") 
 
 
-
-
+#-------------------------------------------------
+# Move the files to the folder
+#-----------------------------------------------
 
     def call_move_files(self) -> None:
         if self.A20_path and self.folder_path:
@@ -349,19 +403,42 @@ class App(ctk.CTk):
         # self.terminal_textbox.see("end")
         self.update()
 
-
+#-----------------------------------
+# Playback
+#----------------------------------
 
     def play_selected_audio(self) -> None:
         """Play the selected audio file."""
-        self.play_audio(self.audio_file_path)
+        index: tuple = self.a20_listbox.curselection() 
+        selected_index: tuple = index
+        if isinstance(selected_index, int):
+
+            selected_file_path: str = self.file_paths[selected_index]
+            if selected_file_path:
+                print(f"Gday Slugger - {selected_file_path}")
+                self.audio_player = AudioPlay(selected_file_path)
+
+                self.playback_thread = threading.Thread(target=self.audio_player.play)
+                self.playback_thread.start()
 
 
-    def play_audio(self, file_path: str) -> None:
-        """Play audio using FFmpeg."""
-        try:
-            subprocess.run(['ffmpeg', '-i', file_path, '-f', 'alsa', 'default'], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"An error occurred while trying to play the audio: {e}")
+
+            # try:
+            #     audio_player.play()  # Play the audio
+            # finally:
+            #     audio_player.close()
+        else:
+            print("No file selected")
+
+
+    def stop_playback(self):
+        if self.audio_player:
+            self.audio_player.stop()
+            if self.playback_thread:
+                self.playback_thread.join()  # Wait for the thread to finish
+            self.audio_player.close()
+
+
 
 app = App()
 app.mainloop()
