@@ -1,13 +1,20 @@
 Thursday 17 Oct
 
-
-
-    Make the 
-
-
-
-    Show only todays files 
+    
+Show only todays files 
 
     button to make readable date and time 
 
     integrate folder maker and pull daily folder into Folder label 
+
+
+Saturday 26 Oct 
+
+    PLayback with FFMPEG and pyaudio 
+
+    select file in list box populates aditional info in info box and send the file path to playback 
+
+
+Sunday 27 Oct
+
+

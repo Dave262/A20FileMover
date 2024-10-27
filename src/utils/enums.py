@@ -6,18 +6,18 @@ class Colour(Enum):
         Gruvbox theme with hex colours
     """
     
-    BACKGROUND_COLOR = "#3c3836"
+    BACKGROUND_COLOR = "#2e3440"
     BACKGROUND_DARK = "#1d2021"
     PINK = "#8f3f71"             
-    BLUE = "#458588"            
+    BLUE = "#4c566a"            
     BLACK = "#000000"           
     WHITE = "#FFFFFF"            
     OFF_WHITE = "#FAEBD7"       
     GREY = "#727272"            
-    YELLOW = "#d79921"
+    BUTTON = "#3c455c"
     GREEN = "#98971a"
-    ORANGE = "#af3a03"
-    RED = "#9d0006"
+    ORANGE = "#d08770"
+    RED = "#bf616a"
     NORD = "#292e39"
 
 

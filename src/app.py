@@ -1,50 +1,69 @@
-from typing import Union
+
+from tkinter.constants import COMMAND
 import customtkinter as ctk
-from typing import Union, Callable
+from typing import LiteralString, Union, Callable
 from utils.enums import Colour
-from controllers.main_controller import MainController
-# from src.controllers.macos_drive_controller_v2 import MacUsbDeviceController
-from controllers.linux_drive_controller import LinuxDeviceHandler
-from utils.system_get import SystemGet
-# from controllers.mac_usb_controller_v1 import MacUsbControlerV1
+from controllers.main_controller_v2 import MainController
 from controllers.macos_drive_controller_v2 import FileReport
+from controllers.file_storage import FileInfo
+from controllers.class_based_files import File
+from controllers.wav_info_get import WavInfoGet
+from controllers.audio_playback import AudioPlay
+from controllers.py_dub_playback import PlayBack
+import logging
+import time
+import threading
+import CTkListbox as lb
+import subprocess
+import os
 
-
-# when calling a function from any of the controller modules the syntax is 
+# when calling a function from any of the controller modules the syntax is
 # "self.[_reference to controller as listed in script].function
 
 class App(ctk.CTk):
     def __init__(self):
+        
+        
+
         super().__init__()
-        
+
+        self.audio_player = None
+        self.playback_thread = None
+
         ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")  
-        
-        # configure the window
+        ctk.set_default_color_theme("blue")
+
+# configure the window
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=1)
-        self.grid_columnconfigure((0,1,2), weight=1)  
-        
-        self.geometry("1000x500")
+        self.grid_columnconfigure((0,1), weight=0)
+        self.grid_columnconfigure((2),weight=1)
+
+        self.geometry("900x550")
         self.title("A20 TX File Mover")
+#-------------------------------
+# Controllers
+#-----------------------------------
+        self._usb_controller = FileReport()
+
+        self._controller = MainController(self.print_progress) # print progress callback
+
+        self._file_store = FileInfo()
+        self._class_based_files = File(None,None, None, None, None, None, None, None)
+        self._wav_info_get = WavInfoGet()
+
+#--------------------
+# Globals
+#---------------------       
+        self.current_files: list = [] # the files from tx or manual
         
 
-        system_get = SystemGet()
-        system_platform = system_get.system_trigger()
 
-        if system_platform == "Darwin":
-            self._usb_controller = FileReport()
-        elif system_platform == "Linux":
-            self._usb_controller  = LinuxDeviceHandler()
-        else:
-            raise Exception(f"Unsupported platform: {system_platform}")
 
-        # init controllers
-        self._controller = MainController()
-        # self._usb_controller = MacUsbDeviceController()   
 
         self.grid_rowconfigure((0), weight=0)
-        self.grid_rowconfigure((1), weight=1)
+        self.grid_rowconfigure((1), weight=2)
+        self.grid_rowconfigure((2), weight=0)
         self.grid_columnconfigure((1,2), weight=1)
         self.grid_columnconfigure((0), weight=0)
 
@@ -56,190 +75,391 @@ class App(ctk.CTk):
 # Heading
     def create_layout(self):
 
+# HEADER
         self.frame_header = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_header.grid(row=0, columnspan=3, padx=1, pady=1, sticky="nswe")
-        
+        self.frame_header.grid(row=0, columnspan=3, padx=3, pady=1, sticky="nswe")
+
         self.label_heading =ctk.CTkLabel(self.frame_header)
         self.label_heading.pack(side="left", padx=10, pady=10)
-        self.label_heading.configure(text="A20 TX - FILE MOVER", font=("Inclusive Sans", 25))
-        
+        self.label_heading.configure(text="TRANSMITTER - FILE MOVER", font=("Inclusive Sans", 25))
 
         self.time_heading =ctk.CTkLabel(self.frame_header)
         self.time_heading.pack(side="right", padx=10)
         self.time_heading.configure(text=f"{self._controller.global_time()}", font=("Inclusive Sans", 15))
-        
+
         self.frame_left = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_left.grid(row=1, column=0, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_left.grid(row=1, column=0, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_left.configure()
 
         self.frame_middle = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_middle.grid(row=1, column=1, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_middle.grid(row=1, column=1, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_middle.configure()
 
         self.frame_right = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
-        self.frame_right.grid(row=1, column=2, rowspan=2, padx=3, pady=3, sticky="nswe")
+        self.frame_right.grid(row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_right.configure()
-        
-        # self.folder_path_select = ctk.CTkButton(self.frame_middle, text="Choose Folder Path", command=self.update_textbox_with_folder_path)
-        # self.folder_path_select.pack(pady=20)
+
+        self.frame_footer = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_footer.grid(row=2, columnspan=3, padx=3, pady=1, sticky="nswe")
+
+
 
 # Folder Stuff
-
-        self.folder_label = ctk.CTkTextbox(self.frame_right, height=50, fg_color="transparent")
-        self.folder_label.pack(fill="x", pady=10, padx=20)
-        self.folder_label.insert("0.0", "Placeholder Folder Ha!")
-
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
         self.A20_instance_frame.pack(side="top", pady=1, padx=1)
-        self.A20_instance_frame.configure(fg_color="transparent", border_width=2, border_color=Colour.OFF_WHITE.value)
-        
-        self.A20_instance_label = ctk.CTkLabel(self.A20_instance_frame)
-        self.A20_instance_label.pack(padx=5, pady=5)
-        self.A20_instance_label.configure(text="Transmitter List", font=("Inclusive Sans", 20))
+        self.A20_instance_frame.configure(fg_color="transparent")
+
+        self.tx_list_frame = ctk.CTkFrame(self.A20_instance_frame)
+        self.tx_list_frame.pack(pady=1, padx=1)
+        self.tx_list_frame.configure(fg_color="transparent")
+
+
+        self.tx_refresh_button = ctk.CTkButton(self.tx_list_frame, text="R", width=30, height=30, command=self.create_tx_buttons)
+        self.tx_refresh_button.pack(side="left", pady=5, padx=5)
+        self.tx_refresh_button.configure(fg_color="transparent")
+
+        self.A20_instance_label = ctk.CTkLabel(self.tx_list_frame)
+        self.A20_instance_label.pack(side="left", padx=5, pady=5)
+        self.A20_instance_label.configure(text="Transmitters", font=("Inclusive Sans", 20))
 
         self.options_frame = ctk.CTkFrame(self.frame_left)
         self.options_frame.pack(side="bottom", fill='both', pady=1, padx=1)
-        self.options_frame.configure(fg_color="transparent", border_width=2, border_color=Colour.OFF_WHITE.value)
-        
+        self.options_frame.configure(fg_color="transparent")
+
         self.options_label = ctk.CTkLabel(self.options_frame)
         self.options_label.pack(padx=5, pady=5)
-        self.options_label.configure(text="Options", font=("Inclusive Sans", 20))
-        
-        self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_a20_sel_to_textbox)
+        self.options_label.configure(text="Options", font=("Inclusive Sans", 15))
+
+        self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_select)
         self.A20_path_button.pack(pady=10)
-        self.A20_path_button.configure(fg_color=Colour.PINK.value)
-        
-                
+        self.A20_path_button.configure(fg_color=Colour.BUTTON.value)
+
         self.folder_path_button = ctk.CTkButton(self.options_frame, text="Choose Destination", command=self.update_label_with_folder_path)
         self.folder_path_button.pack(pady=10)
-        self.folder_path_button.configure(fg_color=Colour.PINK.value)       
-        
-        self.options_label = ctk.CTkLabel(self.frame_middle)
-        self.options_label.pack(padx=5, pady=5)
-        self.options_label.configure(text="File List", font=("Inclusive Sans", 20))
+        self.folder_path_button.configure(fg_color=Colour.BUTTON.value)
 
-        self.A20_textbox = ctk.CTkTextbox(self.frame_middle, height=300)
-        self.A20_textbox.pack(side= "top", fill="x", pady=10, padx=10)
-        self.A20_textbox.insert("2.0", "A20 files will show here...") # placeholder text
-        self.A20_textbox.configure(border_width=1, border_color=Colour.OFF_WHITE.value)
+
+        self.options_label_frame = ctk.CTkFrame(self.frame_middle)
+        self.options_label_frame.pack(padx=5, pady=10, fill="both")
+        self.options_label_frame.configure(fg_color="transparent")
+
+
+
+        self.options_label = ctk.CTkLabel(self.options_label_frame)
+        self.options_label.pack(side="left", padx=10, pady=0)
+        self.options_label.configure(text="File list", font=("Inclusive Sans", 15))
+
+
+        self.a20_listbox = lb.CTkListbox(self.frame_middle,
+                                         height=300,
+                                         command=self.add_to_details)
+
+        self.a20_listbox.pack(fill="both", pady=0, padx=10)
+        self.a20_listbox.insert(0, "Files will show here...")
+        self.a20_listbox.configure(border_width=1,
+                                   border_color=Colour.OFF_WHITE.value,
+                                   fg_color=Colour.BACKGROUND_DARK.value,
+                                   hover_color=Colour.GREY.value,
+                                   highlight_color=Colour.BLUE.value,
+                                   font=("Reddit Mono", 13)
+                                   )
+
+        self.copy_info_frame = ctk.CTkFrame(self.frame_right)
+        self.copy_info_frame.pack(padx=5, pady=5, fill="both")
+        self.copy_info_frame.configure(fg_color="transparent")
+
+        self.copy_info_label = ctk.CTkLabel(self.copy_info_frame)
+        self.copy_info_label.pack(side="left", padx=10, pady=0)
+        self.copy_info_label.configure(text="Copy window", font=("Inclusive Sans", 15))
+
+
+        self.terminal_textbox = ctk.CTkTextbox(self.frame_right, height=80)
+        self.terminal_textbox.pack(fill="both", pady=0, padx=10)
+        self.terminal_textbox.insert("2.0", "No folder selected...") # placeholder text
+        self.terminal_textbox.configure(fg_color=Colour.BACKGROUND_DARK.value,
+                                        border_width=1,
+                                        border_color=Colour.OFF_WHITE.value,
+                                        font=("Reddit Mono", 13)
+                                        )
+
+
+        self.file_info_frame = ctk.CTkFrame(self.frame_right)
+        self.file_info_frame.pack(padx=5, pady=5, fill="both")
+        self.file_info_frame.configure(fg_color="transparent")
         
+
+        self.file_info_label = ctk.CTkLabel(self.file_info_frame)
+        self.file_info_label.pack(side="left", padx=10, pady=0)
+        self.file_info_label.configure(text="File info", font=("Inclusive Sans", 15))
+
+
+        self.file_info_textbox = ctk.CTkTextbox(self.frame_right, height=150)
+        self.file_info_textbox.pack(fill="both", pady=0, padx=10)
+        self.file_info_textbox.insert("2.0", "File details...") # placeholder text
+        self.file_info_textbox.configure(fg_color=Colour.BACKGROUND_DARK.value,
+                                        border_width=1,
+                                        border_color=Colour.OFF_WHITE.value,
+                                        font=("Reddit Mono", 13)
+                                        )
+
+
         self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
-        self.options_frame_mid.pack(side="bottom", pady=1, padx=1)
-        self.options_frame_mid.configure(fg_color=Colour.BACKGROUND_COLOR.value, border_width=2, border_color=Colour.OFF_WHITE.value)
-        
-        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="file names")
-        self.extra_button.pack(side="left", fill="x", padx=5, pady=2)
-        self.extra_button.configure(fg_color=Colour.PINK.value)
-        
-        
-        self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="placeholder")
-        self.extra_button_two.pack(side="left", fill="x", padx=5, pady=2)
-        self.extra_button_two.configure(fg_color=Colour.PINK.value)
-        
-        
-        self.extra_button_three = ctk.CTkButton(self.options_frame_mid, text="placeholder")
-        self.extra_button_three.pack(side="left", fill="x", padx=5, pady=2)
-        self.extra_button_three.configure(fg_color=Colour.PINK.value)
+        self.options_frame_mid.pack(side="bottom", pady=10, padx=1)
+        self.options_frame_mid.configure(fg_color="transparent")
 
+        self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show today", command=None)
+        self.extra_button.pack(side="left", fill="x", padx=5, pady=0)
+        self.extra_button.configure(fg_color=Colour.BUTTON.value)
+
+        self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="Clear Files")
+        self.extra_button_two.pack(side="left", fill="x", padx=5, pady=0)
+        self.extra_button_two.configure(fg_color=Colour.BUTTON.value, command=self.clear_textbox)
+
+
+        self.copy_files_button = ctk.CTkButton(self.frame_right, text="Copy Files to Folders", command=self.call_move_files)
+        self.copy_files_button.pack(fill="x", padx=5, pady=10)
+        self.copy_files_button.configure(fg_color=Colour.GREEN.value)
+    
 
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
-        self.move_files_button.pack(pady=20)
-        self.drive_buttons = {}       
+        self.move_files_button.pack(side="bottom", fill="x", padx=5, pady=10)
+        self.move_files_button.configure(fg_color=Colour.PINK.value)
+        self.drive_buttons = {}
+
+        self.playback_label = ctk.CTkLabel(self.frame_footer)
+        self.playback_label.pack(side="left", padx=10, pady=5)
+        self.playback_label.configure(text="Playback", 
+                                      font=("Inclusive Sans", 20)
+                                      )
+
+        self.play_button = ctk.CTkButton(self.frame_footer, text="Play", width=40, height=30, command=self.play_selected_audio)
+        self.play_button.pack(side="left", padx=(60, 10), pady=10)
+        self.play_button.configure(fg_color=Colour.RED.value)
+
+        self.stop_button = ctk.CTkButton(self.frame_footer, text="Stop", width=40, height=30, command=self.stop_playback)
+        self.stop_button.pack(side="left", padx=(10, 10), pady=10)
+        self.stop_button.configure(fg_color=Colour.RED.value)
 
 
 
+        self.playhead_slider = ctk.CTkSlider(self.frame_footer)
+        self.playhead_slider.pack(side="left", pady=20, padx=20)
+        self.playhead_slider.configure(
+            height=20,
+            width=600,
+            button_color=Colour.PINK.value,
+            border_width=3,
+            from_=0,
+            to=100
+        )
 
-# Progress bar
+#------------------------------------
+# Folder selection 
+#--------------------------------
 
+    def update_label_with_folder_path(self) -> None:
+        self.folder_path: str = self._controller.folder_select_path()
 
-        self.progress_bar = ctk.CTkProgressBar(self.frame_right)
-        self.progress_bar.pack(padx=10, pady=10)
-        self.progress_bar.configure(fg_color=Colour.PINK.value, progress_color=Colour.OFF_WHITE.value)
-        self.progress_bar.set(0)
-  
-    updated_date = MainController.A20_convert_name
-    
-    
-    def manual_a20_sel_to_textbox(self):
-            """_summary_
-            passes the contents of a manually selected drive through the file renamer to the a20 textbox
-            """
-            
-            path = self._controller.select_A20_path()
-            
-            if path:
-                self.A20_path = path
-            
-                new_names = self._controller.A20_convert_name(path)
-                self.A20_textbox.delete("1.0", "end")
-                for name in new_names:
-                    self.A20_textbox.insert("end", name + "\n")
-            else:
-                print("No path for A20")
-    
-    def update_label_with_folder_path(self):        
-        self.folder_path = self._controller.select_folder_path()
-       
         if self.folder_path:
-            self.folder_label.delete("1.0", "end")
-            self.folder_label.insert("end", text=f"{self.folder_path}")
-                                   
-            print(f"Folder path set to: {self.folder_path}")
+            self.terminal_textbox.delete("1.0", "end")
+            self.terminal_textbox.insert("end", text=f"Destination:\n{self.folder_path}")
         else:
             print("No folder path selected.")
-        
 
-    
-    def create_tx_buttons(self, passed_label_list=None):
-        
-        if passed_label_list is None:
-            passed_label_list = self._usb_controller.mount_drives() # definine the list
 
-# Clear any existing drive buttons
+#-----------------------------------------
+# Handle manual selection of transmitter
+#------------------------------------------
+
+    def manual_select(self):
+        counter = 1
+        self.file_paths = []
+        path = self._controller.select_A20_path()
+        self.A20_path = ""
+        self.current_files: list = [] # empties existing list 
+        if path:
+            file_label_item = os.path.basename(path)
+            self.current_files: list = self._class_based_files.load_files(path) # list of files for moving etc
+            self.A20_path = path
+            
+            self.a20_listbox.delete(0, "end")
+              # List to store file paths
+            if not self.current_files:
+                self.a20_listbox.insert("end", "No files in selected path")
+            else:
+                for file_instance in self.current_files:
+                    file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
+                    display_text: str = f"{counter} | {file_dict['talent_name']} | {file_dict['length']} | {file_dict['size']} | {file_dict["rec_date"]}"
+                    self.a20_listbox.insert("end", display_text)
+                    self.file_paths.append(file_instance.file_path)  # Store the file path
+                    self.options_label.configure(text=f"Directory: {file_label_item}")
+                    print(f"success! loaded {file_instance}")
+                    counter = counter + 1
+              
+        else:
+            print("No path selected.")
+
+#------------------------------------------
+# Add to details: 
+#------------------------------------------
+
+    def add_to_details(self, index):
+        index: tuple = self.a20_listbox.curselection()  # gets the selected item index in the listbox
+
+        selected_index: tuple = index
+
+        # Ensure selected_index is an integer
+        if isinstance(selected_index, int):
+            selected_file_path: str = self.file_paths[selected_index]  # Retrieve the file path
+            self._wav_info_get.info_getter(selected_file_path)  # Use the file path
+
+            print(f"File number {selected_index}, Path: {selected_file_path}")
+
+            file_dict: dict = self._wav_info_get.info_getter(selected_file_path)
+            display_text: str = (
+                    f"File name: {file_dict['file_name']}\n"
+                    f"Talent: {file_dict['talent_name']}\n"
+                    f"Runtime: {file_dict['length']}\n"
+                    f"Size: {file_dict['size']} mb\n"
+                    f"Rec date: {file_dict["rec_date"]}\n"
+                    f"Frame rate: {file_dict["frame_rate"]}\n"
+                    f"Sample rate: {file_dict["sample_rate"]} hz\n"
+                    f"Bit depth: {file_dict["bit_depth"]}"
+            )
+
+            self.file_info_textbox.delete("1.0", "end")
+            self.file_info_textbox.insert("2.0", display_text)
+            return selected_file_path
+        else:
+            print("Error: selected_index is not an integer.")
+            return None
+            
+#------------------------------------------
+# Automatic transmitter stuff
+#----------------------------------------------
+
+    def create_tx_buttons(self) -> None:
+
+        drive_info: dict = self._usb_controller.mount_drives()
+
+        labels: list = drive_info["labels"]
+        paths: list = drive_info["paths"]
+
+        # logging.info(f"Creating TX buttons for: {labels}")
+
         for button in self.drive_buttons.values():
             button.destroy()
-        self.drive_buttons.clear()        
-        # for drive_info in passed_label_list:
-        
-        for tx in passed_label_list:
-            print(tx)
-    # Create a new button
-            button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {tx}", command=lambda tx_button=tx: self.handle_drive_selection(tx_button))
-            button.pack(pady=10)  # Adjust layout as needed       
+        self.drive_buttons.clear()
 
-    # Store the button in the dictionary for future reference
-            self.drive_buttons[tx] = button 
-            # self.after(5000, self._usb_controller.mount_drives)
-                
-    
-    def handle_drive_selection(self, a20_mount_point):
-        if a20_mount_point:
-            received_file_list = self._usb_controller.info_getter()
-            self.A20_path = a20_mount_point # gets a20 files ready to move
-            try:
-                self.A20_textbox.delete("1.0", "end") 
-                for file_info in received_file_list:
-                    display_text = f"{file_info['count']}-{file_info['file_name']} : {file_info['mb']} MB : start tc-{file_info['start_tc']}\n" 
-                    self.A20_textbox.insert("end", display_text)
-                print(f"handle_drive_selection can see: {a20_mount_point}")
-            except ValueError:
-                print("Couldn't load a20 mount pointt")
-        return a20_mount_point    
 
-    
-    def update_progress(self, progress):
-        self.progressbar.set(progress)
+        if labels:
+            for index, label in enumerate(iterable=labels):
+                full_path: list = paths[index] # turn it into a list
+                logging.info(f"Creating button for: {label} with path {full_path}")
 
-    
-    def call_move_files(self):
-
-        
-        if self.A20_path and self.folder_path:
-            print("i see both paths")
-            self._controller.move_files(self.A20_path, self.folder_path, app.progress_bar)
+                button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {label}", command=lambda tx_button=full_path: self.select_tx_button(tx_button))
+                button.pack(pady=10)  # Adjust layout as needed
+                self.drive_buttons[label] = button
+                logging.info(f"Button for {label} packed successfully.")
 
         else:
+            logging.info("No transmitters connected, soz.")
+
+
+
+    def select_tx_button(self, a20_mount_point):
+        counter = 1
+        self.file_paths = []
+        self.A20_path = ""
+        self.current_files: list = []
+        if a20_mount_point:
+            file_label_item = os.path.basename(a20_mount_point)
+
+            self.current_files = self._class_based_files.load_files(a20_mount_point)
+            self.A20_path = a20_mount_point
+            
+            self.a20_listbox.delete(0, "end")
+              # List to store file paths
+            if not self.current_files:
+                self.a20_listbox.insert("end", "No files in selected path")
+            else:
+                for file_instance in self.current_files:
+                    file_dict: dict = self._wav_info_get.info_getter(file_instance.file_path)
+                    display_text: str = f"{counter}   {file_dict['talent_name']}   {file_dict['length']}   {file_dict['size']}     {file_dict["rec_date"]}"
+                    self.a20_listbox.insert("end", display_text)
+                    self.file_paths.append(file_instance.file_path)  # Store the file path
+                    self.options_label.configure(text=f"Transmitter: {file_label_item}", font=("Inclusive Sans", 20))
+                    print(f"success! loaded {file_instance}")
+                    counter = counter + 1
+        
+        else:
+            print("Transmitter not loading for some reason")
+    
+
+
+
+    def clear_textbox(self) -> None:
+        self.a20_listbox.delete(0, "end") 
+        self.a20_listbox.insert(0, "Files will show here...")
+        self.file_info_textbox.delete("1.0", "end")
+        self.file_info_textbox.insert("2.0", "File details...")
+        self.current_files: list = [] # empty the list 
+        print("current files cleared")
+        print(f"{self.current_files}")
+
+#-------------------------------------------------
+# Move the files to the folder
+#-----------------------------------------------
+
+    def call_move_files(self) -> None:
+        if self.A20_path and self.folder_path:
+            print("i see both paths")
+
+            file_match = self._controller.match_files_to_folder(folder_path=self.folder_path, tx_path=self.A20_path)
+            self._controller.move_files(file_match)
+        else:
             print("Please select both paths before moving files.")
+
+
+    def print_progress(self, copied, total, file_name) -> None:
+        progress_bar = self._controller.update_custom_progress_bar(copied, total, file_name)
+        self.terminal_textbox.delete("1.0", "end")
+        self.terminal_textbox.insert("end", progress_bar + '\n')
+        # self.terminal_textbox.see("end")
+        self.update()
+
+#-----------------------------------
+# Playback
+#----------------------------------
+
+    def play_selected_audio(self) -> None:
+        index: tuple = self.a20_listbox.curselection() 
+        selected_index: tuple = index
+        if isinstance(selected_index, int):
+
+            selected_file_path: str = self.file_paths[selected_index]
+            if selected_file_path:
+                print(f"Gday Slugger - {selected_file_path}")
+                self.audio_player = PlayBack(selected_file_path)
+                # self.playback_thread = threading.Thread(target=self.audio_player)
+                # self.playback_thread.start()
+        else:
+            print("No file selected")
+
+
+    # def update_slider(self, value):
+    #     """Update the slider position."""
+    #     self.after(0, self.playhead_slider.set, value)
+
+
+    def stop_playback(self):
+        if self.audio_player:
+            self.audio_player.stop()
+            if self.playback_thread and self.playback_thread.is_alive():
+                self.playback_thread.join(timeout=1)  # Wait for the thread to finish
+            self.audio_player.close()
+
+
 
 app = App()
 app.mainloop()
