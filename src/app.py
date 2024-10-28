@@ -5,19 +5,19 @@ from typing import LiteralString, Union, Callable
 from utils.enums import Colour
 from controllers.main_controller_v2 import MainController
 from controllers.macos_drive_controller_v2 import FileReport
-from controllers.file_storage import FileInfo
+# from controllers.file_storage import FileInfo
 from controllers.class_based_files import File
 from controllers.wav_info_get import WavInfoGet
-from controllers.audio_playback import AudioPlay
-from controllers.py_dub_playback import PlayBack
+
+from controllers.playback import play_audio, stop_audio
 import logging
 import time
-import threading
+from threading import Thread, Event
 import CTkListbox as lb
 import subprocess
 import os
 
-# when calling a function from any of the controller modules the syntax is
+# when calling a function from any of the controller modules the syntax wis
 # "self.[_reference to controller as listed in script].function
 
 class App(ctk.CTk):
@@ -26,9 +26,8 @@ class App(ctk.CTk):
         
 
         super().__init__()
-
-        self.audio_player = None
-        self.playback_thread = None
+        
+        # self.playback_thread = None
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -47,12 +46,15 @@ class App(ctk.CTk):
 
         self._controller = MainController(self.print_progress) # print progress callback
 
-        self._file_store = FileInfo()
+        # self._file_store = FileInfo()
         self._class_based_files = File(None,None, None, None, None, None, None, None)
         self._wav_info_get = WavInfoGet()
 
-        self.current_files: list = [] # the files from tx or manual
+        self.current_files: list = [] # the files from tx or manualc
 
+        # self.audio_play = play_audio
+ 
+   
 
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=2)
@@ -259,7 +261,6 @@ class App(ctk.CTk):
         else:
             print("No folder path selected.")
 
-
 #-----------------------------------------
 # Handle manual selection of transmitter
 #------------------------------------------
@@ -425,32 +426,37 @@ class App(ctk.CTk):
 # Playback
 #----------------------------------
 
+
+
+    
+
     def play_selected_audio(self) -> None:
+        self.stop_playback()
+        
         index: tuple = self.a20_listbox.curselection() 
         selected_index: tuple = index
         if isinstance(selected_index, int):
+            selected_file_path = self.file_paths[selected_index]
 
-            selected_file_path: str = self.file_paths[selected_index]
             if selected_file_path:
-                print(f"Gday Slugger - {selected_file_path}")
-                self.audio_player = PlayBack(selected_file_path)
-                # self.playback_thread = threading.Thread(target=self.audio_player)
-                # self.playback_thread.start()
+                print(f"playing: -> {selected_file_path}")
+
+                print(f"Type of selected_file_path: {type(selected_file_path)}")
+                print(f"Value of selected_file_path: {selected_file_path}")
+
+                t1 = Thread(target=play_audio, args=(selected_file_path,))
+                t1.start()
+                print("Started T1 thread")
+
         else:
             print("No file selected")
 
 
-    # def update_slider(self, value):
-    #     """Update the slider position."""
-    #     self.after(0, self.playhead_slider.set, value)
-
 
     def stop_playback(self):
-        if self.audio_player:
-            self.audio_player.stop()
-            if self.playback_thread and self.playback_thread.is_alive():
-                self.playback_thread.join(timeout=1)  # Wait for the thread to finish
-            self.audio_player.close()
+        stop_audio()
+
+
 
 
 
