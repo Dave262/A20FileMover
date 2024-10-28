@@ -8,7 +8,7 @@ from controllers.macos_drive_controller_v2 import FileReport
 
 from controllers.class_based_files import File
 from controllers.wav_info_get import WavInfoGet
-from controllers.new_playback import play_wav, stop_wav
+from controllers.new_playback import AudioPlayer
 
 # from controllers.playback import play_audio, stop_audio
 
@@ -53,8 +53,8 @@ class App(ctk.CTk):
         self._wav_info_get = WavInfoGet()
 
         self.current_files: list = [] # the files from tx or manualc
-
-        # self.audio_play = play_audio
+        self.audio_player = AudioPlayer
+       
  
    
 
@@ -438,8 +438,7 @@ class App(ctk.CTk):
 # Playback
 #----------------------------------
     def play_selected_audio(self) -> None:
-    
-        self.stop_playback()
+
         
         index: tuple = self.a20_listbox.curselection() 
         selected_index: tuple = index
@@ -451,8 +450,10 @@ class App(ctk.CTk):
                 print(f"playing: -> {selected_file_path}")
                 print(f"Type of selected_file_path: {type(selected_file_path)}")
                 print(f"Value of selected_file_path: {selected_file_path}")
+                
+                self.audio_player = AudioPlayer(selected_file_path)
 
-                t1 = Thread(target=play_wav, args=(selected_file_path,))
+                t1 = Thread(target=self.audio_player.play_audio_segment)
                 t1.start()
                 print("Started T1 thread")
         else:
@@ -461,7 +462,8 @@ class App(ctk.CTk):
 
 
     def stop_playback(self):
-        stop_wav()
+        self.audio_player.stop()
+        self.audio_player.reset()
   
 
 
