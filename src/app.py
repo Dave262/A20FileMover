@@ -111,7 +111,7 @@ class App(ctk.CTk):
 
         self.tx_refresh_button = ctk.CTkButton(self.tx_list_frame, text="R", width=30, height=30, command=self.create_tx_buttons)
         self.tx_refresh_button.pack(side="left", pady=5, padx=5)
-        self.tx_refresh_button.configure(fg_color="transparent")
+        self.tx_refresh_button.configure(fg_color="transparent", font=("Inclusive Sans", 15))
 
         self.A20_instance_label = ctk.CTkLabel(self.tx_list_frame)
         self.A20_instance_label.pack(side="left", padx=5, pady=5)
@@ -127,11 +127,11 @@ class App(ctk.CTk):
 
         self.A20_path_button = ctk.CTkButton(self.options_frame, text="Manually Choose TX", command=self.manual_select)
         self.A20_path_button.pack(pady=10)
-        self.A20_path_button.configure(fg_color=Colour.BUTTON.value)
+        self.A20_path_button.configure(fg_color=Colour.BUTTON.value, font=("Inclusive Sans", 15))
 
         self.folder_path_button = ctk.CTkButton(self.options_frame, text="Choose Destination", command=self.update_label_with_folder_path)
         self.folder_path_button.pack(pady=10)
-        self.folder_path_button.configure(fg_color=Colour.BUTTON.value)
+        self.folder_path_button.configure(fg_color=Colour.BUTTON.value, font=("Inclusive Sans", 15))
 
 
         self.options_label_frame = ctk.CTkFrame(self.frame_middle)
@@ -145,19 +145,28 @@ class App(ctk.CTk):
         self.options_label.configure(text="File list", font=("Inclusive Sans", 15))
 
 
+
+
+
         self.a20_listbox = lb.CTkListbox(self.frame_middle,
                                          height=300,
+                                         width=300,
                                          command=self.add_to_details)
 
         self.a20_listbox.pack(fill="both", pady=0, padx=10)
         self.a20_listbox.insert(0, "Files will show here...")
         self.a20_listbox.configure(border_width=1,
+                                   corner_radius=10,
                                    border_color=Colour.OFF_WHITE.value,
                                    fg_color=Colour.BACKGROUND_DARK.value,
                                    hover_color=Colour.GREY.value,
                                    highlight_color=Colour.BLUE.value,
-                                   font=("Reddit Mono", 13)
+                                   scrollbar_button_color=Colour.OFF_WHITE.value,
+                                   font=("Reddit Mono", 15)
                                    )
+        
+
+
 
         self.copy_info_frame = ctk.CTkFrame(self.frame_right)
         self.copy_info_frame.pack(padx=5, pady=5, fill="both")
@@ -199,52 +208,54 @@ class App(ctk.CTk):
 
 
         self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
-        self.options_frame_mid.pack(side="bottom", pady=10, padx=1)
+        self.options_frame_mid.pack(side="bottom", fill="x", expand="true", pady=10, padx=1)
         self.options_frame_mid.configure(fg_color="transparent")
 
         self.extra_button = ctk.CTkButton(self.options_frame_mid, text="Show today", command=None)
-        self.extra_button.pack(side="left", fill="x", padx=5, pady=0)
-        self.extra_button.configure(fg_color=Colour.BUTTON.value)
+        self.extra_button.pack(side="left", fill="x", expand="true", padx=5, pady=0)
+        self.extra_button.configure(fg_color=Colour.BUTTON.value, font=("Inclusive Sans", 15))
 
         self.extra_button_two = ctk.CTkButton(self.options_frame_mid, text="Clear Files")
-        self.extra_button_two.pack(side="left", fill="x", padx=5, pady=0)
-        self.extra_button_two.configure(fg_color=Colour.BUTTON.value, command=self.clear_textbox)
+        self.extra_button_two.pack(side="left", fill="x", expand="true", padx=5, pady=0)
+        self.extra_button_two.configure(fg_color=Colour.BUTTON.value, command=self.clear_textbox, font=("Inclusive Sans", 15))
 
 
         self.copy_files_button = ctk.CTkButton(self.frame_right, text="Copy Files to Folders", command=self.call_move_files)
         self.copy_files_button.pack(fill="x", padx=5, pady=10)
-        self.copy_files_button.configure(fg_color=Colour.GREEN.value)
+        self.copy_files_button.configure(fg_color=Colour.GREEN.value, font=("Inclusive Sans", 15))
     
 
         self.move_files_button = ctk.CTkButton(self.frame_right, text="Move Files to Folders", command=self.call_move_files)
         self.move_files_button.pack(side="bottom", fill="x", padx=5, pady=10)
-        self.move_files_button.configure(fg_color=Colour.PINK.value)
+        self.move_files_button.configure(fg_color=Colour.PINK.value, font=("Inclusive Sans", 15))
         self.drive_buttons = {}
 
-        self.playback_label = ctk.CTkLabel(self.frame_footer)
-        self.playback_label.pack(side="left", padx=10, pady=5)
-        self.playback_label.configure(text="Playback", 
-                                      font=("Inclusive Sans", 20)
-                                      )
+        # self.playback_label = ctk.CTkLabel(self.frame_footer)
+        # self.playback_label.pack(side="left", padx=10, pady=5)
+        # self.playback_label.configure(text="Playback", 
+        #                               font=("Inclusive Sans", 20)
+        #                               )
 
-        self.play_button = ctk.CTkButton(self.frame_footer, text="Play", width=40, height=30, command=self.play_selected_audio)
-        self.play_button.pack(side="left", padx=(60, 10), pady=10)
-        self.play_button.configure(fg_color=Colour.RED.value)
+        self.play_button = ctk.CTkButton(self.frame_footer, text="Play", width=50, height=40, command=self.play_selected_audio)
+        self.play_button.pack(side="left", padx=(20, 10), pady=10)
+        self.play_button.configure(fg_color=Colour.NORD.value, border_width=1, border_color=Colour.OFF_WHITE.value, hover_color=Colour.BACKGROUND_DARK.value, font=("Inclusive Sans", 15))
 
-        self.stop_button = ctk.CTkButton(self.frame_footer, text="Stop", width=40, height=30, command=self.stop_playback)
+        self.stop_button = ctk.CTkButton(self.frame_footer, text="Stop", width=50, height=40, command=self.stop_playback)
         self.stop_button.pack(side="left", padx=(10, 10), pady=10)
-        self.stop_button.configure(fg_color=Colour.RED.value)
+        self.stop_button.configure(fg_color=Colour.NORD.value, border_width=1, border_color=Colour.OFF_WHITE.value, hover_color=Colour.BACKGROUND_DARK.value, font=("Inclusive Sans", 15))
 
 
 
         self.playhead_slider = ctk.CTkSlider(self.frame_footer)
-        self.playhead_slider.pack(side="left", pady=20, padx=20)
+        self.playhead_slider.pack(side="left", fill="x", expand ='true', pady=20, padx=20)
         self.playhead_slider.configure(
             height=20,
-            width=600,
-            button_color=Colour.PINK.value,
-            border_width=3,
-            from_=0,
+            
+            button_color=Colour.NORD.value,
+            button_hover_color=Colour.NORD.value,
+            progress_color=Colour.OFF_WHITE.value,
+            border_width=2,
+            from_=1,
             to=100
         )
 
@@ -353,6 +364,7 @@ class App(ctk.CTk):
 
                 button = ctk.CTkButton(self.A20_instance_frame, text=f"TX: {label}", command=lambda tx_button=full_path: self.select_tx_button(tx_button))
                 button.pack(pady=10)  # Adjust layout as needed
+                button.configure(fg_color=Colour.NORD.value, border_width=1, border_color=Colour.OFF_WHITE.value, hover_color=Colour.BACKGROUND_DARK.value, font=("Inclusive Sans", 15))
                 self.drive_buttons[label] = button
                 logging.info(f"Button for {label} packed successfully.")
 
@@ -418,7 +430,9 @@ class App(ctk.CTk):
     def print_progress(self, copied, total, file_name) -> None:
         progress_bar = self._controller.update_custom_progress_bar(copied, total, file_name)
         self.terminal_textbox.delete("1.0", "end")
+        self.terminal_textbox.configure(font=("Reddit Mono", 10))
         self.terminal_textbox.insert("end", progress_bar + '\n')
+        
         # self.terminal_textbox.see("end")
         self.update()
 
