@@ -14,6 +14,7 @@ class WavInfoGet:
        
 
         if passed_file:
+        
             info = WavInfoReader(passed_file)
 
             file_name = os.path.basename(passed_file)
@@ -65,10 +66,13 @@ class WavInfoGet:
 
             self.timeref = file_time_ref
             self.sample_rate = sample_rate
-            
+        # except Exception as e:
+        #     print("Error getting info for files")
+        
+    
 
             # print(file_info)
-            return file_info # dict
+        return file_info # dict
 # return self.wav_list
 if __name__=="__main__":
     wav_info = WavInfoGet()

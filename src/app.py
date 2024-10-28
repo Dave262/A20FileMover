@@ -5,20 +5,22 @@ from typing import LiteralString, Union, Callable
 from utils.enums import Colour
 from controllers.main_controller_v2 import MainController
 from controllers.macos_drive_controller_v2 import FileReport
-# from controllers.file_storage import FileInfo
+
 from controllers.class_based_files import File
 from controllers.wav_info_get import WavInfoGet
+from controllers.new_playback import play_wav, stop_wav
 
-from controllers.playback import play_audio, stop_audio
+# from controllers.playback import play_audio, stop_audio
+
 import logging
 import time
 from threading import Thread, Event
 import CTkListbox as lb
-import subprocess
 import os
 
 # when calling a function from any of the controller modules the syntax wis
 # "self.[_reference to controller as listed in script].function
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -249,20 +251,17 @@ class App(ctk.CTk):
         self.playhead_slider = ctk.CTkSlider(self.frame_footer)
         self.playhead_slider.pack(side="left", fill="x", expand ='true', pady=20, padx=20)
         self.playhead_slider.configure(
-            height=20,
             
-            button_color=Colour.NORD.value,
-            button_hover_color=Colour.NORD.value,
-            progress_color=Colour.OFF_WHITE.value,
-            border_width=2,
+            button_color=Colour.RED.value,
+            button_hover_color=Colour.RED.value,
+            progress_color=Colour.RED.value,
             from_=1,
             to=100
         )
-
+        self.playhead_slider.set(0)
 #------------------------------------
 # Folder selection 
 #--------------------------------
-
     def update_label_with_folder_path(self) -> None:
         self.folder_path: str = self._controller.folder_select_path()
 
@@ -271,7 +270,6 @@ class App(ctk.CTk):
             self.terminal_textbox.insert("end", text=f"Destination:\n{self.folder_path}")
         else:
             print("No folder path selected.")
-
 #-----------------------------------------
 # Handle manual selection of transmitter
 #------------------------------------------
@@ -439,12 +437,8 @@ class App(ctk.CTk):
 #-----------------------------------
 # Playback
 #----------------------------------
-
-
-
-    
-
     def play_selected_audio(self) -> None:
+    
         self.stop_playback()
         
         index: tuple = self.a20_listbox.curselection() 
@@ -453,22 +447,22 @@ class App(ctk.CTk):
             selected_file_path = self.file_paths[selected_index]
 
             if selected_file_path:
+                
                 print(f"playing: -> {selected_file_path}")
-
                 print(f"Type of selected_file_path: {type(selected_file_path)}")
                 print(f"Value of selected_file_path: {selected_file_path}")
 
-                t1 = Thread(target=play_audio, args=(selected_file_path,))
+                t1 = Thread(target=play_wav, args=(selected_file_path,))
                 t1.start()
                 print("Started T1 thread")
-
         else:
             print("No file selected")
 
 
 
     def stop_playback(self):
-        stop_audio()
+        stop_wav()
+  
 
 
 
