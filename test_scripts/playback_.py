@@ -1,69 +1,64 @@
 import subprocess
-from tempfile import NamedTemporaryFile
-import sys
-import os
-from math import log, ceil
-from warnings import warn
+import time
+
+class AudioPlayer:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.process = None
 
 
-def which(program):
-    """
-    Mimics behavior of UNIX which command.
-    """
-    # Add .exe program extension for windows support
-    if os.name == "nt" and not program.endswith(".exe"):
-        program += ".exe"
-
-    envdir_list = [os.curdir] + os.environ["PATH"].split(os.pathsep)
-
-    for envdir in envdir_list:
-        program_path = os.path.join(envdir, program)
-        if os.path.isfile(program_path) and os.access(program_path, os.X_OK):
-            return program_path
-
-def get_player_name():
-    """
-    Return enconder default application for system, either avconv or ffmpeg
-    """
-    if which("avplay"):
-        return "avplay"
-    elif which("ffplay"):
-        return "ffplay"
-    else:
-        # should raise exception
-        warn("Couldn't find ffplay or avplay - defaulting to ffplay, but may not work", RuntimeWarning)
-        return "ffplay"
+    def start(self):
+        if self.process is None:
+            # Start playback using ffplay
+            self.process = subprocess.Popen(["ffplay", "-nodisp", "-autoexit", "-loglevel", "error", self.file_path])
+            print("Playback started.")
+        else:
+            print("Playback already in progress.")
 
 
-def make_chunks(audio_segment, chunk_length):
-    """
-    Breaks an AudioSegment into chunks that are <chunk_length> milliseconds
-    long.
-    if chunk_length is 50 then you'll get a list of 50 millisecond long audio
-    segments back (except the last one, which can be shorter)
-    """
-    number_of_chunks = ceil(len(audio_segment) / float(chunk_length))
-    return [audio_segment[i * chunk_length:(i + 1) * chunk_length]
-            for i in range(int(number_of_chunks))]
+    def stop(self):
+        if self.process:
+            # Stop playback by terminating the ffplay process
+            self.process.terminate()
+            self.process = None
+            print("Playback stopped.")
+        else:
+            print("No playback to stop.")
 
 
-def _play_with_pyaudio(seg):
-    import pyaudio
+    def rewind(self, seconds):
+        # Rewinds by restarting playback from an earlier time
+        self._seek(-seconds)
 
-    p = pyaudio.PyAudio()
-    stream = p.open(format=p.get_format_from_width(seg.sample_width),
-                    channels=seg.channels,
-                    rate=seg.frame_rate,
-                    output=True)
 
-    # Just in case there were any exceptions/interrupts, we release the resource
-    # So as not to raise OSError: Device Unavailable should play() be used again
-    try:
-        # break audio into half-second chunks (to allows keyboard interrupts)
-        for chunk in make_chunks(seg, 500):
-            stream.write(chunk._data)
-    finally:
-        stream.stop_stream()
-        stream.close()
+    def fast_forward(self, seconds):
+        # Fast-forwards by restarting playback from a later time
+        self._seek(seconds)
 
-        p.terminate()
+
+    def _seek(self, offset_seconds):
+        # To achieve seeking, stop playback, calculate the new starting time, and restart from there
+        if self.process:
+            self.stop()  # Stop current playback
+
+        # Calculate the new start time
+        seek_time = max(0, offset_seconds)
+        # Start playback from the specified seek time
+        self.process = subprocess.Popen(["ffplay", "-nodisp", "-autoexit", "-ss", str(seek_time), "-loglevel", "error", self.file_path])
+        print(f"Playback started from {seek_time} seconds.")
+
+
+# Example usage
+if __name__ == "__main__":
+    player = AudioPlayer("src/audio/Labour Day_July 2024.wav")
+
+    # Start playback
+    player.start()
+    time.sleep(5)  # Playback for 5 seconds
+
+    # Fast-forward by 10 seconds
+    player.fast_forward(10)
+    time.sleep(5)  # Playback for another 5 seconds
+
+    # Stop playback
+    player.stop()

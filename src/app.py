@@ -247,6 +247,11 @@ class App(ctk.CTk):
         self.stop_button.configure(fg_color=Colour.NORD.value, border_width=1, border_color=Colour.OFF_WHITE.value, hover_color=Colour.BACKGROUND_DARK.value, font=("Inclusive Sans", 15))
 
 
+        self.ff_button = ctk.CTkButton(self.frame_footer, text=">>>", width=50, height=40, command=self.fast_forward)
+        self.ff_button.pack(side="left", padx=(10, 10), pady=10)
+        self.ff_button.configure(fg_color=Colour.NORD.value, border_width=1, border_color=Colour.OFF_WHITE.value, hover_color=Colour.BACKGROUND_DARK.value, font=("Inclusive Sans", 20))
+
+
 
         self.playhead_slider = ctk.CTkSlider(self.frame_footer)
         self.playhead_slider.pack(side="left", fill="x", expand ='true', pady=20, padx=20)
@@ -434,9 +439,11 @@ class App(ctk.CTk):
         # self.terminal_textbox.see("end")
         self.update()
 
+
+
 #-----------------------------------
 # Playback
-#----------------------------------
+#-----------------------------------
     def play_selected_audio(self) -> None:
 
         
@@ -453,7 +460,7 @@ class App(ctk.CTk):
                 
                 self.audio_player = AudioPlayer(selected_file_path)
 
-                t1 = Thread(target=self.audio_player.play_audio_segment)
+                t1 = Thread(target=self.audio_player.start)
                 t1.start()
                 print("Started T1 thread")
         else:
@@ -463,7 +470,11 @@ class App(ctk.CTk):
 
     def stop_playback(self):
         self.audio_player.stop()
-        self.audio_player.reset()
+        
+    def fast_forward(self):
+        self.audio_player._seek(50)
+
+
   
 
 
