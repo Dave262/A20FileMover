@@ -17,7 +17,7 @@ class WavInfoGet:
             bext_metadata = getattr(info, 'bext', None)
             general_metadata = getattr(info, 'fmt', None)
             chunk_metadata = getattr(info, 'data', None)
-            bullet_metadata = getattr(info, 'info', None)
+            # bullet_metadata = getattr(info, 'info', None)
 
             # Extract metadata with default values
             talent_name = getattr(bext_metadata, 'originator', None)

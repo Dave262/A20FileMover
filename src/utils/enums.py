@@ -3,7 +3,7 @@ from enum import Enum
 
 class Colour(Enum):
     """
-        Gruvbox theme with hex colours
+    Various cool colours
     """
     
     BACKGROUND_COLOR = "#2e3440"
@@ -17,7 +17,9 @@ class Colour(Enum):
     BUTTON = "#3c455c"
     GREEN = "#98971a"
     ORANGE = "#d08770"
+    YELLOW = "#D6A853"
     RED = "#bf616a"
     NORD = "#292e39"
+    BROWN = "#483D40"
 
 

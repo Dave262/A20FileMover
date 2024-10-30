@@ -7,7 +7,8 @@
     "pyright": {
       "settings": {
         "python": {
-          "pythonPath": ".venv/bin/python"
+          "pythonPath": ".venv/bin/python",
+
         }
       }
     }
@@ -21,5 +22,16 @@
     "show_background": false,
     "edit_debounce_ms": 700,
     "scroll_debounce_ms": 50
-  }
+  },
+
+
+
+    "languages": {
+      "Python": {
+        "language_servers": ["ruff"]
+        // Or, if there are other language servers you want to use with Python
+        // "language_servers": ["ruff", "pyright"]
+      }
+    }
+
 }
