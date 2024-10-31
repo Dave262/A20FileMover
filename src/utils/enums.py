@@ -6,7 +6,7 @@ class Colour(Enum):
     Various cool colours
     """
 
-    BACKGROUND_COLOR = "#504945"
+    BACKGROUND_COLOR = "#292e39"  # #504945
     BACKGROUND_DARK = "#1d2021"
     PINK = "#8f3f71"
     BLUE = "#458588"

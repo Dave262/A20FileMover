@@ -30,7 +30,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure((0, 1), weight=0)
         self.grid_columnconfigure((2), weight=1)
 
-        self.geometry("900x600+2500+100")
+        self.geometry("900x600")
         self.title("A20 TX File Mover")
 
         # Controllers
@@ -84,11 +84,12 @@ class App(ctk.CTk):
         self.frame_middle.grid(
             row=1, column=1, rowspan=1, padx=3, pady=3, sticky="nswe"
         )
-        self.frame_middle.configure()
 
         self.frame_right = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
         self.frame_right.grid(row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_right.configure()
+
+
 
         self.frame_footer = ctk.CTkFrame(self, fg_color="transparent")
         self.frame_footer.grid(row=2, columnspan=3, padx=3, pady=1, sticky="nswe")
@@ -101,6 +102,28 @@ class App(ctk.CTk):
         self.tx_list_frame = ctk.CTkFrame(self.A20_instance_frame)
         self.tx_list_frame.pack(pady=1, padx=1)
         self.tx_list_frame.configure(fg_color="transparent")
+
+
+        self.frame_footer.grid_rowconfigure((0, 1), weight=1)
+        self.frame_footer.grid_rowconfigure((2), weight=0)
+        self.frame_footer.grid_columnconfigure((0, 1), weight=1)
+        self.frame_footer.grid_columnconfigure((2, 3), weight=2)
+
+        self.play_frame = ctk.CTkFrame(self.frame_footer)
+        self.play_frame.grid(
+            row=2, column=1, rowspan=1, columnspan=4, padx=(3,1), pady=3, sticky="nswe"
+        )
+        self.play_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
+
+        self.controls_frame = ctk.CTkFrame(self.frame_footer)
+        self.controls_frame.grid(
+            row=0, column=0, rowspan=3, padx=(1,3), pady=3, sticky="nswe"
+        )
+        self.controls_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
+
+
+
+
 
         self.tx_refresh_button = ctk.CTkButton(
             self.tx_list_frame,
@@ -157,78 +180,56 @@ class App(ctk.CTk):
             font=("Inclusive Sans", 15),
         )
 
-        self.options_label_frame = ctk.CTkFrame(self.frame_middle)
-        self.options_label_frame.pack(padx=5, pady=10, fill="both")
-        self.options_label_frame.configure(fg_color="transparent")
+#----------------------------------------------
+# Mid frame
+#------------------------------------------------
+
+        self.middle_inner_frame = ctk.CTkFrame(self.frame_middle)
+        self.middle_inner_frame.pack(padx=0, pady=0, fill="both", expand="true")
+        self.middle_inner_frame.configure(fg_color="transparent")
+
+
+        self.options_label_frame = ctk.CTkFrame(self.middle_inner_frame)
+        self.options_label_frame.pack(padx=10, pady=10, fill="both")
+        self.options_label_frame.configure(fg_color=Colour.BLUE.value)
 
         self.options_label = ctk.CTkLabel(self.options_label_frame)
         self.options_label.pack(side="left", padx=10, pady=0)
         self.options_label.configure(text="File list", font=("Inclusive Sans", 15))
 
+        # self.middle_inner_frame = ctk.CTkFrame(self.frame_middle)
+        # self.middle_inner_frame.pack()
+
+
+
         self.a20_listbox = lb.CTkListbox(
-            self.frame_middle, height=300, width=300, command=self.add_to_details
+            self.middle_inner_frame, height=300, width=300, command=self.add_to_details
         )
 
-        self.a20_listbox.pack(fill="both", pady=0, padx=10)
+        self.a20_listbox.pack(pady=0, padx=10, fill="both", expand="true")
         self.a20_listbox.insert(0, "Files will show here...")
         self.a20_listbox.configure(
-            border_width=1,
+            border_width=0,
             corner_radius=10,
             border_color=Colour.OFF_WHITE.value,
-            fg_color=Colour.BACKGROUND_COLOR.value,
+            fg_color=Colour.BACKGROUND_DARK.value,
             hover_color=Colour.GREY.value,
             highlight_color=Colour.BLUE.value,
             scrollbar_button_color=Colour.OFF_WHITE.value,
             font=("Reddit Mono", 15),
         )
 
-        self.copy_info_frame = ctk.CTkFrame(self.frame_right)
-        self.copy_info_frame.pack(padx=5, pady=5, fill="both")
-        self.copy_info_frame.configure(fg_color="transparent")
-
-        self.copy_info_label = ctk.CTkLabel(self.copy_info_frame)
-        self.copy_info_label.pack(side="left", padx=10, pady=0)
-        self.copy_info_label.configure(text="Copy window", font=("Inclusive Sans", 15))
-
-        self.terminal_textbox = ctk.CTkTextbox(self.frame_right, height=80)
-        self.terminal_textbox.pack(fill="both", pady=0, padx=10)
-        self.terminal_textbox.insert("2.0", "No folder selected...")  # placeholder text
-        self.terminal_textbox.configure(
-            fg_color=Colour.BACKGROUND_COLOR.value,
-            border_width=1,
-            border_color=Colour.OFF_WHITE.value,
-            font=("Reddit Mono", 13),
+        self.button_frame_mid = ctk.CTkFrame(self.middle_inner_frame)
+        self.button_frame_mid.pack(
+            pady=10, padx=10, fill="both", expand="false",
         )
-
-        self.file_info_frame = ctk.CTkFrame(self.frame_right)
-        self.file_info_frame.pack(padx=5, pady=5, fill="both")
-        self.file_info_frame.configure(fg_color="transparent")
-
-        self.file_info_label = ctk.CTkLabel(self.file_info_frame)
-        self.file_info_label.pack(side="left", padx=10, pady=0)
-        self.file_info_label.configure(text="File info", font=("Inclusive Sans", 15))
-
-        self.file_info_textbox = ctk.CTkTextbox(self.frame_right, height=150)
-        self.file_info_textbox.pack(fill="both", pady=0, padx=10)
-        self.file_info_textbox.insert("2.0", "File details...")  # placeholder text
-        self.file_info_textbox.configure(
-            fg_color=Colour.BACKGROUND_COLOR.value,
-            border_width=1,
-            border_color=Colour.OFF_WHITE.value,
-            font=("Reddit Mono", 13),
-        )
-
-        self.options_frame_mid = ctk.CTkFrame(self.frame_middle)
-        self.options_frame_mid.pack(
-            side="bottom", fill="x", expand="true", pady=10, padx=1
-        )
-        self.options_frame_mid.configure(fg_color="transparent")
+        self.button_frame_mid.configure(fg_color=Colour.BLUE.value)
 
         self.extra_button = ctk.CTkButton(
-            self.options_frame_mid, text="Show today", command=self.show_today
+            self.button_frame_mid, text="Show today", command=self.show_today
         )
         self.extra_button.pack(
-            side="left", fill="both", expand="false", padx=(30, 10), pady=0
+            side="left", fill="x", expand="true", padx=10, pady=10
         )
         self.extra_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
@@ -239,10 +240,10 @@ class App(ctk.CTk):
         )
 
         self.extra_button_two = ctk.CTkButton(
-            self.options_frame_mid, text="Clear Files"
+            self.button_frame_mid, text="Clear Files"
         )
         self.extra_button_two.pack(
-            side="right", fill="x", expand="false", padx=(10, 30), pady=0
+            side="left", fill="x", expand="true", padx=10, pady=10
         )
         self.extra_button_two.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
@@ -253,10 +254,59 @@ class App(ctk.CTk):
             font=("Inclusive Sans", 15),
         )
 
-        self.move_files_button = ctk.CTkButton(
-            self.frame_right, text="Move Files to Folders", command=self.call_move_files
+#---------------------------
+# Right frame
+#---------------------------
+        self.copy_info_frame = ctk.CTkFrame(self.frame_right)
+        self.copy_info_frame.pack(padx=10, pady=10, fill="both")
+        self.copy_info_frame.configure(fg_color=Colour.BLUE.value)
+
+        self.copy_info_label = ctk.CTkLabel(self.copy_info_frame)
+        self.copy_info_label.pack(side="left", padx=10, pady=0)
+        self.copy_info_label.configure(text="Copy window", font=("Inclusive Sans", 15))
+
+
+        self.right_inner_frame = ctk.CTkFrame(self.frame_right)
+        self.right_inner_frame.pack(padx=0, pady=0, fill="both", expand="true")
+        self.right_inner_frame.configure(fg_color="transparent")
+
+
+        self.copy_info_textbox = ctk.CTkTextbox(self.right_inner_frame, height=100)
+        self.copy_info_textbox.pack(fill="both", pady=0, padx=10, expand="true")
+        self.copy_info_textbox.insert("2.0", "No folder selected...")  # placeholder text
+        self.copy_info_textbox.configure(
+            fg_color=Colour.BACKGROUND_DARK.value,
+            border_width=0,
+            border_color=Colour.OFF_WHITE.value,
+            font=("Reddit Mono", 13),
         )
-        self.move_files_button.pack(side="bottom", fill="x", padx=5, pady=15)
+
+        self.file_info_frame = ctk.CTkFrame(self.right_inner_frame)
+        self.file_info_frame.pack(padx=10, pady=10, fill="both")
+        self.file_info_frame.configure(fg_color=Colour.BLUE.value)
+
+        self.file_info_label = ctk.CTkLabel(self.file_info_frame)
+        self.file_info_label.pack(side="left", padx=10, pady=0)
+        self.file_info_label.configure(text="File info", font=("Inclusive Sans", 15))
+
+        self.file_info_textbox = ctk.CTkTextbox(self.right_inner_frame, height=170)
+        self.file_info_textbox.pack(fill="both", pady=0, padx=10, expand="true")
+        self.file_info_textbox.insert("2.0", "File details...")  # placeholder text
+        self.file_info_textbox.configure(
+            fg_color=Colour.BACKGROUND_DARK.value,
+            border_width=0,
+            border_color=Colour.OFF_WHITE.value,
+            font=("Reddit Mono", 13),
+        )
+
+        self.button_frame_right = ctk.CTkFrame(self.frame_right)
+        self.button_frame_right.pack(pady=10, padx=10, fill="both",)
+        self.button_frame_right.configure(fg_color=Colour.BLUE.value)
+
+        self.move_files_button = ctk.CTkButton(
+            self.button_frame_right, text="Move Files", command=self.call_move_files
+        )
+        self.move_files_button.pack(side="left", fill="x", expand="true", padx=10, pady=10)
         self.move_files_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
@@ -267,9 +317,9 @@ class App(ctk.CTk):
         self.drive_buttons = {}
 
         self.copy_files_button = ctk.CTkButton(
-            self.frame_right, text="Copy Files to Folders", command=self.call_move_files
+            self.button_frame_right, text="Copy Files", command=self.call_move_files
         )
-        self.copy_files_button.pack(side="bottom", fill="x", padx=5, pady=10)
+        self.copy_files_button.pack(side="left", fill="x", expand="true", padx=10, pady=10)
         self.copy_files_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
@@ -277,23 +327,6 @@ class App(ctk.CTk):
             hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
-
-        self.frame_footer.grid_rowconfigure((0, 1), weight=1)
-        self.frame_footer.grid_rowconfigure((2), weight=0)
-        self.frame_footer.grid_columnconfigure((0, 1), weight=1)
-        self.frame_footer.grid_columnconfigure((2, 3), weight=2)
-
-        self.play_frame = ctk.CTkFrame(self.frame_footer)
-        self.play_frame.grid(
-            row=2, column=1, rowspan=1, columnspan=4, padx=3, pady=3, sticky="nswe"
-        )
-        self.play_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
-
-        self.controls_frame = ctk.CTkFrame(self.frame_footer)
-        self.controls_frame.grid(
-            row=0, column=0, rowspan=3, padx=3, pady=3, sticky="nswe"
-        )
-        self.controls_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
 
         self.play_button = ctk.CTkButton(
             self.controls_frame,
@@ -359,8 +392,8 @@ class App(ctk.CTk):
         self.folder_path: str = self._controller.folder_select_path()
 
         if self.folder_path:
-            self.terminal_textbox.delete("1.0", "end")
-            self.terminal_textbox.insert(
+            self.copy_info_textbox.delete("1.0", "end")
+            self.copy_info_textbox.insert(
                 "end", text=f"Destination:\n{self.folder_path}"
             )
         else:
@@ -551,11 +584,11 @@ class App(ctk.CTk):
         progress_bar = self._controller.update_custom_progress_bar(
             copied, total, file_name
         )
-        self.terminal_textbox.delete("1.0", "end")
-        self.terminal_textbox.configure(font=("Reddit Mono", 10))
-        self.terminal_textbox.insert("end", progress_bar + "\n")
+        self.copy_info_textbox.delete("1.0", "end")
+        self.copy_info_textbox.configure(font=("Reddit Mono", 10))
+        self.copy_info_textbox.insert("end", progress_bar + "\n")
 
-        # self.terminal_textbox.see("end")
+        # self.copy_info_textbox.see("end")
         self.update()
 
     # -----------------------------------
