@@ -30,7 +30,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure((0, 1), weight=0)
         self.grid_columnconfigure((2), weight=1)
 
-        self.geometry("900x600")
+        self.geometry("900x600+2500+100")
         self.title("A20 TX File Mover")
 
         # Controllers
@@ -61,7 +61,7 @@ class App(ctk.CTk):
     # Heading
     def create_layout(self):
         # HEADER
-        self.frame_header = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_header = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
         self.frame_header.grid(row=0, columnspan=3, padx=3, pady=1, sticky="nswe")
 
         self.label_heading = ctk.CTkLabel(self.frame_header)
@@ -76,17 +76,17 @@ class App(ctk.CTk):
             text=f"{self._controller.global_time()}", font=("Inclusive Sans", 15)
         )
 
-        self.frame_left = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_left = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
         self.frame_left.grid(row=1, column=0, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_left.configure()
 
-        self.frame_middle = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_middle = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
         self.frame_middle.grid(
             row=1, column=1, rowspan=1, padx=3, pady=3, sticky="nswe"
         )
         self.frame_middle.configure()
 
-        self.frame_right = ctk.CTkFrame(self, fg_color=Colour.NORD.value)
+        self.frame_right = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
         self.frame_right.grid(row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe")
         self.frame_right.configure()
 
@@ -131,12 +131,15 @@ class App(ctk.CTk):
         self.A20_path_button = ctk.CTkButton(
             self.options_frame, text="Manually Choose TX", command=self.manual_select
         )
-        self.A20_path_button.pack(pady=10)
+        self.A20_path_button.pack(
+            pady=10,
+            padx=10,
+        )
         self.A20_path_button.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
 
@@ -147,10 +150,10 @@ class App(ctk.CTk):
         )
         self.folder_path_button.pack(pady=10)
         self.folder_path_button.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
 
@@ -172,7 +175,7 @@ class App(ctk.CTk):
             border_width=1,
             corner_radius=10,
             border_color=Colour.OFF_WHITE.value,
-            fg_color=Colour.BACKGROUND_DARK.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             hover_color=Colour.GREY.value,
             highlight_color=Colour.BLUE.value,
             scrollbar_button_color=Colour.OFF_WHITE.value,
@@ -191,7 +194,7 @@ class App(ctk.CTk):
         self.terminal_textbox.pack(fill="both", pady=0, padx=10)
         self.terminal_textbox.insert("2.0", "No folder selected...")  # placeholder text
         self.terminal_textbox.configure(
-            fg_color=Colour.BACKGROUND_DARK.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
             font=("Reddit Mono", 13),
@@ -209,7 +212,7 @@ class App(ctk.CTk):
         self.file_info_textbox.pack(fill="both", pady=0, padx=10)
         self.file_info_textbox.insert("2.0", "File details...")  # placeholder text
         self.file_info_textbox.configure(
-            fg_color=Colour.BACKGROUND_DARK.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
             font=("Reddit Mono", 13),
@@ -228,10 +231,10 @@ class App(ctk.CTk):
             side="left", fill="both", expand="false", padx=(30, 10), pady=0
         )
         self.extra_button.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
 
@@ -242,10 +245,10 @@ class App(ctk.CTk):
             side="right", fill="x", expand="false", padx=(10, 30), pady=0
         )
         self.extra_button_two.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             command=self.clear_textbox,
             font=("Inclusive Sans", 15),
         )
@@ -255,10 +258,10 @@ class App(ctk.CTk):
         )
         self.move_files_button.pack(side="bottom", fill="x", padx=5, pady=15)
         self.move_files_button.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
         self.drive_buttons = {}
@@ -268,43 +271,43 @@ class App(ctk.CTk):
         )
         self.copy_files_button.pack(side="bottom", fill="x", padx=5, pady=10)
         self.copy_files_button.configure(
-            fg_color=Colour.NORD.value,
+            fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
 
-        self.frame_footer.grid_rowconfigure((0,1), weight=1)
+        self.frame_footer.grid_rowconfigure((0, 1), weight=1)
         self.frame_footer.grid_rowconfigure((2), weight=0)
-        self.frame_footer.grid_columnconfigure((0,1), weight=1)
-        self.frame_footer.grid_columnconfigure((2,3), weight=2)
+        self.frame_footer.grid_columnconfigure((0, 1), weight=1)
+        self.frame_footer.grid_columnconfigure((2, 3), weight=2)
 
         self.play_frame = ctk.CTkFrame(self.frame_footer)
-        self.play_frame.grid(row=2, column=1, rowspan=1, columnspan=4, padx=3, pady=3, sticky="nswe")
-        self.play_frame.configure(fg_color="transparent")
-        
+        self.play_frame.grid(
+            row=2, column=1, rowspan=1, columnspan=4, padx=3, pady=3, sticky="nswe"
+        )
+        self.play_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
+
         self.controls_frame = ctk.CTkFrame(self.frame_footer)
         self.controls_frame.grid(
             row=0, column=0, rowspan=3, padx=3, pady=3, sticky="nswe"
         )
-        self.controls_frame.configure(fg_color="transparent")
-
-
+        self.controls_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
 
         self.play_button = ctk.CTkButton(
             self.controls_frame,
             text="Play",
             width=50,
-            height=40,
+            height=50,
             command=self.play_selected_audio,
         )
-        self.play_button.pack(side="left", fill="both", expand="true", padx=5, pady=5)
+        self.play_button.pack(side="left", fill="x", expand="true", padx=5, pady=5)
         self.play_button.configure(
             fg_color=Colour.GREEN.value,
-            border_width=1,
+            border_width=3,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 25),
         )
 
@@ -312,22 +315,20 @@ class App(ctk.CTk):
             self.controls_frame,
             text="Stop",
             width=50,
-            height=40,
+            height=50,
             command=self.stop_playback,
         )
-        self.stop_button.pack(side="right", fill="both", expand="true", padx=5, pady=5)
+        self.stop_button.pack(side="right", fill="x", expand="true", padx=5, pady=5)
         self.stop_button.configure(
             fg_color=Colour.RED.value,
-            border_width=1,
+            border_width=3,
             border_color=Colour.OFF_WHITE.value,
-            hover_color=Colour.BACKGROUND_DARK.value,
+            hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 25),
         )
- 
 
         self.playhead_slider = ctk.CTkSlider(self.play_frame)
-        self.playhead_slider.pack(padx=10, pady=(20,5), fill="x"
-        )
+        self.playhead_slider.pack(padx=10, pady=(20, 5), fill="x")
         self.playhead_slider.configure(
             button_color=Colour.RED.value,
             button_hover_color=Colour.RED.value,
@@ -335,21 +336,16 @@ class App(ctk.CTk):
             from_=1,
             to=100,
             height=20,
-          
         )
         self.playhead_slider.set(0)
 
         self.playtime_label = ctk.CTkLabel(self.play_frame)
-        self.playtime_label.pack(side="left", padx=(50,10), pady=10)
+        self.playtime_label.pack(side="left", padx=(150, 50), pady=10)
         self.playtime_label.configure(text="00:00:00", font=("Reddit Mono", 20))
 
         self.timecode_label = ctk.CTkLabel(self.play_frame)
-        self.timecode_label.pack(side="right", padx=(10,50), pady=10
-            
-        )
+        self.timecode_label.pack(side="right", padx=(50, 150), pady=10)
         self.timecode_label.configure(text="00:00:00", font=("Reddit Mono", 20))
-
-
 
     def update_label(self, value):
         total_seconds = float(value)
@@ -373,7 +369,6 @@ class App(ctk.CTk):
     # -----------------------------------------
     # Handle manual selection of transmitter
     # ------------------------------------------
-
     def manual_select(self):
         counter = 1
         self.file_paths = []
@@ -477,10 +472,10 @@ class App(ctk.CTk):
                 )
                 button.pack(pady=10)  # Adjust layout as needed
                 button.configure(
-                    fg_color=Colour.NORD.value,
+                    fg_color=Colour.BACKGROUND_COLOR.value,
                     border_width=1,
                     border_color=Colour.OFF_WHITE.value,
-                    hover_color=Colour.BACKGROUND_DARK.value,
+                    hover_color=Colour.BACKGROUND_COLOR.value,
                     font=("Inclusive Sans", 15),
                 )
                 self.drive_buttons[label] = button
