@@ -25,12 +25,13 @@ class App(ctk.CTk):
         ctk.set_default_color_theme("blue")
 
         # configure the window
-        self.grid_rowconfigure((0), weight=0)
-        self.grid_rowconfigure((1), weight=1)
-        self.grid_columnconfigure((0, 1), weight=0)
-        self.grid_columnconfigure((2), weight=1)
+        # self.grid_rowconfigure((0), weight=0)
+        # self.grid_rowconfigure((1), weight=1)
+        # self.grid_columnconfigure((0, 1), weight=0)
+        # self.grid_columnconfigure((2), weight=1)
 
-        self.geometry("900x600")
+        self.geometry("900x600+2500+100")
+        self.minsize(900, 600)
         self.title("A20 TX File Mover")
 
         # Controllers
@@ -41,7 +42,9 @@ class App(ctk.CTk):
         )  # print progress callback
 
         # self._file_store = FileInfo()
-        self._class_based_files = File(None, None, None, None, None, None, None, None)
+        self._class_based_files = File(
+            None, None, None, None, None, None, None, None
+        )
         self._wav_info_get = WavInfoGet()
 
         self.current_files: list = []  # the files from tx or manualc
@@ -50,8 +53,11 @@ class App(ctk.CTk):
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=2)
         self.grid_rowconfigure((2), weight=0)
-        self.grid_columnconfigure((1, 2), weight=1)
+
         self.grid_columnconfigure((0), weight=0)
+        self.grid_columnconfigure((1), weight=1)
+        self.grid_columnconfigure((2), weight=2)
+
 
         self.A20_path = ""
         self.folder_path = ""
@@ -61,8 +67,12 @@ class App(ctk.CTk):
     # Heading
     def create_layout(self):
         # HEADER
-        self.frame_header = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
-        self.frame_header.grid(row=0, columnspan=3, padx=3, pady=1, sticky="nswe")
+        self.frame_header = ctk.CTkFrame(
+            self, fg_color=Colour.BACKGROUND_COLOR.value
+        )
+        self.frame_header.grid(
+            row=0, columnspan=3, padx=3, pady=1, sticky="nswe"
+        )
 
         self.label_heading = ctk.CTkLabel(self.frame_header)
         self.label_heading.pack(side="left", padx=10, pady=10)
@@ -73,86 +83,127 @@ class App(ctk.CTk):
         self.time_heading = ctk.CTkLabel(self.frame_header)
         self.time_heading.pack(side="right", padx=10)
         self.time_heading.configure(
-            text=f"{self._controller.global_time()}", font=("Inclusive Sans", 15)
+            text=f"{self._controller.global_time()}",
+            font=("Inclusive Sans", 15),
         )
 
-        self.frame_left = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
-        self.frame_left.grid(row=1, column=0, rowspan=1, padx=3, pady=3, sticky="nswe")
+        self.frame_left = ctk.CTkFrame(
+            self, fg_color=Colour.BACKGROUND_COLOR.value
+        )
+        self.frame_left.grid(
+            row=1, column=0, rowspan=1, padx=3, pady=3, sticky="nswe"
+        )
         self.frame_left.configure()
 
-        self.frame_middle = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
+        self.frame_middle = ctk.CTkFrame(
+            self, fg_color=Colour.BACKGROUND_COLOR.value
+        )
         self.frame_middle.grid(
             row=1, column=1, rowspan=1, padx=3, pady=3, sticky="nswe"
         )
 
-        self.frame_right = ctk.CTkFrame(self, fg_color=Colour.BACKGROUND_COLOR.value)
-        self.frame_right.grid(row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe")
+        self.frame_right = ctk.CTkFrame(
+            self, fg_color=Colour.BACKGROUND_COLOR.value,
+            width=50
+        )
+        self.frame_right.grid(
+            row=1, column=2, rowspan=1, padx=3, pady=3, sticky="nswe"
+        )
         self.frame_right.configure()
 
-
-
         self.frame_footer = ctk.CTkFrame(self, fg_color="transparent")
-        self.frame_footer.grid(row=2, columnspan=3, padx=3, pady=1, sticky="nswe")
+        self.frame_footer.grid(
+            row=2, columnspan=3, padx=3, pady=1, sticky="nswe"
+        )
 
         # Folder Stuff
         self.A20_instance_frame = ctk.CTkFrame(self.frame_left)
-        self.A20_instance_frame.pack(side="top", pady=1, padx=1)
+        self.A20_instance_frame.pack(side="top", pady=1, padx=1, fill="both", expand="true")
         self.A20_instance_frame.configure(fg_color="transparent")
 
         self.tx_list_frame = ctk.CTkFrame(self.A20_instance_frame)
-        self.tx_list_frame.pack(pady=1, padx=1)
+        self.tx_list_frame.pack(pady=0, padx=5, fill="both")
         self.tx_list_frame.configure(fg_color="transparent")
 
 
+        self.tx_frame = ctk.CTkFrame(self.A20_instance_frame)
+        self.tx_frame.pack(pady=0, padx=5, fill="both", expand="true")
+        self.tx_frame.configure(fg_color="transparent")
+
         self.frame_footer.grid_rowconfigure((0, 1), weight=1)
         self.frame_footer.grid_rowconfigure((2), weight=0)
-        self.frame_footer.grid_columnconfigure((0, 1), weight=1)
+        self.frame_footer.grid_columnconfigure((0, 1), weight=0)
         self.frame_footer.grid_columnconfigure((2, 3), weight=2)
 
         self.play_frame = ctk.CTkFrame(self.frame_footer)
         self.play_frame.grid(
-            row=2, column=1, rowspan=1, columnspan=4, padx=(3,1), pady=3, sticky="nswe"
+            row=1,
+            column=1,
+            rowspan=1,
+            columnspan=4,
+            padx=(3, 1),
+            pady=3,
+            sticky="nswe",
         )
-        self.play_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
+        self.play_frame.configure(fg_color="transparent")
+
+
+        self.counters_frame = ctk.CTkFrame(self.frame_footer)
+        self.counters_frame.grid(
+            row=2,
+            column=1,
+            rowspan=1,
+            columnspan=4,
+            padx=(3, 1),
+            pady=3,
+            sticky="nswe",
+        )
+        self.counters_frame.configure(fg_color="transparent")
+
+
+        self.counters_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
         self.controls_frame = ctk.CTkFrame(self.frame_footer)
         self.controls_frame.grid(
-            row=0, column=0, rowspan=3, padx=(1,3), pady=3, sticky="nswe"
+            row=0, column=0, rowspan=3, padx=(1, 3), pady=3, sticky="nswe"
         )
-        self.controls_frame.configure(fg_color=Colour.BACKGROUND_COLOR.value)
+        self.controls_frame.configure(fg_color="transparent")
+
+        self.controls_frame.grid_columnconfigure((0,1), weight=1)
+        self.controls_frame.grid_rowconfigure((0,1), weight=1)
 
 
 
+        self.transmitters_label = ctk.CTkLabel(self.tx_list_frame)
+        self.transmitters_label.pack(side="left", padx=5, pady=5)
+        self.transmitters_label.configure(
+            text="Transmitters", font=("Inclusive Sans", 15)
+        )
 
 
         self.tx_refresh_button = ctk.CTkButton(
             self.tx_list_frame,
             text="R",
-            width=30,
-            height=30,
+            width=20,
+            height=20,
+            border_width=1,
+            border_color=Colour.OFF_WHITE.value,
             command=self.create_tx_buttons,
         )
-        self.tx_refresh_button.pack(side="left", pady=5, padx=5)
+        self.tx_refresh_button.pack(pady=5, padx=5)
         self.tx_refresh_button.configure(
             fg_color="transparent", font=("Inclusive Sans", 15)
         )
 
-        self.A20_instance_label = ctk.CTkLabel(self.tx_list_frame)
-        self.A20_instance_label.pack(side="left", padx=5, pady=5)
-        self.A20_instance_label.configure(
-            text="Transmitters", font=("Inclusive Sans", 20)
-        )
-
         self.options_frame = ctk.CTkFrame(self.frame_left)
-        self.options_frame.pack(side="bottom", fill="both", pady=1, padx=1)
+        self.options_frame.pack(side="bottom", fill="both", pady=10, padx=1)
         self.options_frame.configure(fg_color="transparent")
 
-        self.options_label = ctk.CTkLabel(self.options_frame)
-        self.options_label.pack(padx=5, pady=5)
-        self.options_label.configure(text="Options", font=("Inclusive Sans", 15))
 
         self.A20_path_button = ctk.CTkButton(
-            self.options_frame, text="Manually Choose TX", command=self.manual_select
+            self.options_frame,
+            text="Manually Choose TX",
+            command=self.manual_select,
         )
         self.A20_path_button.pack(
             pady=10,
@@ -160,7 +211,7 @@ class App(ctk.CTk):
         )
         self.A20_path_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
-            border_width=1,
+            border_width=2,
             border_color=Colour.OFF_WHITE.value,
             hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
@@ -171,39 +222,41 @@ class App(ctk.CTk):
             text="Choose Destination",
             command=self.update_label_with_folder_path,
         )
-        self.folder_path_button.pack(pady=10)
+        self.folder_path_button.pack(pady=10, padx=10)
         self.folder_path_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
-            border_width=1,
+            border_width=2,
             border_color=Colour.OFF_WHITE.value,
             hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 15),
         )
 
-#----------------------------------------------
-# Mid frame
-#------------------------------------------------
+        # ----------------------------------------------
+        # Mid frame
+        # ------------------------------------------------
 
         self.middle_inner_frame = ctk.CTkFrame(self.frame_middle)
         self.middle_inner_frame.pack(padx=0, pady=0, fill="both", expand="true")
         self.middle_inner_frame.configure(fg_color="transparent")
 
-
         self.options_label_frame = ctk.CTkFrame(self.middle_inner_frame)
         self.options_label_frame.pack(padx=10, pady=10, fill="both")
-        self.options_label_frame.configure(fg_color=Colour.BLUE.value)
+        self.options_label_frame.configure(fg_color="transparent")
 
         self.options_label = ctk.CTkLabel(self.options_label_frame)
         self.options_label.pack(side="left", padx=10, pady=0)
-        self.options_label.configure(text="File list", font=("Inclusive Sans", 15))
+        self.options_label.configure(
+            text="File list", font=("Inclusive Sans", 15)
+        )
 
         # self.middle_inner_frame = ctk.CTkFrame(self.frame_middle)
         # self.middle_inner_frame.pack()
 
-
-
         self.a20_listbox = lb.CTkListbox(
-            self.middle_inner_frame, height=300, width=300, command=self.add_to_details
+            self.middle_inner_frame,
+            height=300,
+            width=400,
+            command=self.add_to_details,
         )
 
         self.a20_listbox.pack(pady=0, padx=10, fill="both", expand="true")
@@ -221,9 +274,12 @@ class App(ctk.CTk):
 
         self.button_frame_mid = ctk.CTkFrame(self.middle_inner_frame)
         self.button_frame_mid.pack(
-            pady=10, padx=10, fill="both", expand="false",
+            pady=10,
+            padx=10,
+            fill="both",
+            expand="false",
         )
-        self.button_frame_mid.configure(fg_color=Colour.BLUE.value)
+        self.button_frame_mid.configure(fg_color="transparent")
 
         self.extra_button = ctk.CTkButton(
             self.button_frame_mid, text="Show today", command=self.show_today
@@ -254,26 +310,30 @@ class App(ctk.CTk):
             font=("Inclusive Sans", 15),
         )
 
-#---------------------------
-# Right frame
-#---------------------------
+        # ---------------------------
+        # Right frame
+        # ---------------------------
         self.copy_info_frame = ctk.CTkFrame(self.frame_right)
         self.copy_info_frame.pack(padx=10, pady=10, fill="both")
-        self.copy_info_frame.configure(fg_color=Colour.BLUE.value)
+        self.copy_info_frame.configure(fg_color="transparent")
 
         self.copy_info_label = ctk.CTkLabel(self.copy_info_frame)
         self.copy_info_label.pack(side="left", padx=10, pady=0)
-        self.copy_info_label.configure(text="Copy window", font=("Inclusive Sans", 15))
-
+        self.copy_info_label.configure(
+            text="Copy window", font=("Inclusive Sans", 15)
+        )
 
         self.right_inner_frame = ctk.CTkFrame(self.frame_right)
         self.right_inner_frame.pack(padx=0, pady=0, fill="both", expand="true")
         self.right_inner_frame.configure(fg_color="transparent")
 
-
-        self.copy_info_textbox = ctk.CTkTextbox(self.right_inner_frame, height=100)
+        self.copy_info_textbox = ctk.CTkTextbox(
+            self.right_inner_frame, height=100
+        )
         self.copy_info_textbox.pack(fill="both", pady=0, padx=10, expand="true")
-        self.copy_info_textbox.insert("2.0", "No folder selected...")  # placeholder text
+        self.copy_info_textbox.insert(
+            "2.0", "No folder selected..."
+        )  # placeholder text
         self.copy_info_textbox.configure(
             fg_color=Colour.BACKGROUND_DARK.value,
             border_width=0,
@@ -283,15 +343,21 @@ class App(ctk.CTk):
 
         self.file_info_frame = ctk.CTkFrame(self.right_inner_frame)
         self.file_info_frame.pack(padx=10, pady=10, fill="both")
-        self.file_info_frame.configure(fg_color=Colour.BLUE.value)
+        self.file_info_frame.configure(fg_color="transparent")
 
         self.file_info_label = ctk.CTkLabel(self.file_info_frame)
         self.file_info_label.pack(side="left", padx=10, pady=0)
-        self.file_info_label.configure(text="File info", font=("Inclusive Sans", 15))
+        self.file_info_label.configure(
+            text="File info", font=("Inclusive Sans", 15)
+        )
 
-        self.file_info_textbox = ctk.CTkTextbox(self.right_inner_frame, height=170)
+        self.file_info_textbox = ctk.CTkTextbox(
+            self.right_inner_frame, height=170
+        )
         self.file_info_textbox.pack(fill="both", pady=0, padx=10, expand="true")
-        self.file_info_textbox.insert("2.0", "File details...")  # placeholder text
+        self.file_info_textbox.insert(
+            "2.0", "File details..."
+        )  # placeholder text
         self.file_info_textbox.configure(
             fg_color=Colour.BACKGROUND_DARK.value,
             border_width=0,
@@ -300,13 +366,21 @@ class App(ctk.CTk):
         )
 
         self.button_frame_right = ctk.CTkFrame(self.frame_right)
-        self.button_frame_right.pack(pady=10, padx=10, fill="both",)
-        self.button_frame_right.configure(fg_color=Colour.BLUE.value)
+        self.button_frame_right.pack(
+            pady=10,
+            padx=10,
+            fill="both",
+        )
+        self.button_frame_right.configure(fg_color="transparent")
 
         self.move_files_button = ctk.CTkButton(
-            self.button_frame_right, text="Move Files", command=self.call_move_files
+            self.button_frame_right,
+            text="Move Files",
+            command=self.call_move_files,
         )
-        self.move_files_button.pack(side="left", fill="x", expand="true", padx=10, pady=10)
+        self.move_files_button.pack(
+            side="left", fill="x", expand="true", padx=10, pady=10
+        )
         self.move_files_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
@@ -317,9 +391,13 @@ class App(ctk.CTk):
         self.drive_buttons = {}
 
         self.copy_files_button = ctk.CTkButton(
-            self.button_frame_right, text="Copy Files", command=self.call_move_files
+            self.button_frame_right,
+            text="Copy Files",
+            command=self.call_move_files,
         )
-        self.copy_files_button.pack(side="left", fill="x", expand="true", padx=10, pady=10)
+        self.copy_files_button.pack(
+            side="left", fill="x", expand="true", padx=10, pady=10
+        )
         self.copy_files_button.configure(
             fg_color=Colour.BACKGROUND_COLOR.value,
             border_width=1,
@@ -331,14 +409,16 @@ class App(ctk.CTk):
         self.play_button = ctk.CTkButton(
             self.controls_frame,
             text="Play",
-            width=50,
-            height=50,
+            width=80,
+            height=40,
             command=self.play_selected_audio,
         )
-        self.play_button.pack(side="left", fill="x", expand="true", padx=5, pady=5)
+        self.play_button.grid(row=0, column=0, padx=5, pady=5
+
+        )
         self.play_button.configure(
             fg_color=Colour.GREEN.value,
-            border_width=3,
+            border_width=2,
             border_color=Colour.OFF_WHITE.value,
             hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 25),
@@ -347,23 +427,30 @@ class App(ctk.CTk):
         self.stop_button = ctk.CTkButton(
             self.controls_frame,
             text="Stop",
-            width=50,
-            height=50,
+            width=80,
+            height=40,
             command=self.stop_playback,
         )
-        self.stop_button.pack(side="right", fill="x", expand="true", padx=5, pady=5)
+        self.stop_button.grid(row=0, column=1, padx=5, pady=5
+
+        )
         self.stop_button.configure(
             fg_color=Colour.RED.value,
-            border_width=3,
+            border_width=2,
             border_color=Colour.OFF_WHITE.value,
             hover_color=Colour.BACKGROUND_COLOR.value,
             font=("Inclusive Sans", 25),
         )
 
+
+        self.time_entry =ctk.CTkEntry(self.controls_frame)
+        self.time_entry.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
+        self.time_entry.configure(placeholder_text="enter timecode")
+
         self.playhead_slider = ctk.CTkSlider(self.play_frame)
-        self.playhead_slider.pack(padx=10, pady=(20, 5), fill="x")
+        self.playhead_slider.pack(padx=10, pady=10, fill="x")
         self.playhead_slider.configure(
-            button_color=Colour.RED.value,
+            button_color=Colour.PINK.value,
             button_hover_color=Colour.RED.value,
             progress_color=Colour.RED.value,
             from_=1,
@@ -372,12 +459,16 @@ class App(ctk.CTk):
         )
         self.playhead_slider.set(0)
 
-        self.playtime_label = ctk.CTkLabel(self.play_frame)
-        self.playtime_label.pack(side="left", padx=(150, 50), pady=10)
+        self.playtime_label = ctk.CTkLabel(self.counters_frame)
+        self.playtime_label.grid(row=0, column=0, padx=10, pady=10)
         self.playtime_label.configure(text="00:00:00", font=("Reddit Mono", 20))
 
-        self.timecode_label = ctk.CTkLabel(self.play_frame)
-        self.timecode_label.pack(side="right", padx=(50, 150), pady=10)
+        self.current_play_label = ctk.CTkLabel(self.counters_frame)
+        self.current_play_label.grid(row=0, column=1, padx=10, pady=10)
+        self.current_play_label.configure(text="currently playing", font=("Reddit Mono", 20))
+
+        self.timecode_label = ctk.CTkLabel(self.counters_frame)
+        self.timecode_label.grid(row=0, column=2, padx=10, pady=10)
         self.timecode_label.configure(text="00:00:00", font=("Reddit Mono", 20))
 
     def update_label(self, value):
@@ -429,7 +520,9 @@ class App(ctk.CTk):
                     self.file_paths.append(
                         file_instance.file_path
                     )  # Store the file path
-                    self.options_label.configure(text=f"Directory: {file_label_item}")
+                    self.options_label.configure(
+                        text=f"Directory: {file_label_item}"
+                    )
                     print(f"success! loaded {file_instance}")
                     counter = counter + 1
 
@@ -452,7 +545,9 @@ class App(ctk.CTk):
             selected_file_path: str = self.file_paths[
                 selected_index
             ]  # Retrieve the file path
-            self._wav_info_get.info_getter(selected_file_path)  # Use the file path
+            self._wav_info_get.info_getter(
+                selected_file_path
+            )  # Use the file path
 
             print(f"File number {selected_index}, Path: {selected_file_path}")
 
@@ -494,19 +589,21 @@ class App(ctk.CTk):
         if labels:
             for index, label in enumerate(iterable=labels):
                 full_path: list = paths[index]  # turn it into a list
-                logging.info(f"Creating button for: {label} with path {full_path}")
+                logging.info(
+                    f"Creating button for: {label} with path {full_path}"
+                )
 
                 button = ctk.CTkButton(
-                    self.A20_instance_frame,
+                    self.tx_frame,
                     text=f"TX: {label}",
                     command=lambda tx_button=full_path: self.select_tx_button(
                         tx_button
                     ),
                 )
-                button.pack(pady=10)  # Adjust layout as needed
+                button.pack(pady=10, padx=10)  # Adjust layout as needed
                 button.configure(
                     fg_color=Colour.BACKGROUND_COLOR.value,
-                    border_width=1,
+                    border_width=2,
                     border_color=Colour.OFF_WHITE.value,
                     hover_color=Colour.BACKGROUND_COLOR.value,
                     font=("Inclusive Sans", 15),
@@ -525,7 +622,9 @@ class App(ctk.CTk):
         if a20_mount_point:
             file_label_item = os.path.basename(a20_mount_point)
 
-            self.current_files = self._class_based_files.load_files(a20_mount_point)
+            self.current_files = self._class_based_files.load_files(
+                a20_mount_point
+            )
             self.A20_path = a20_mount_point
 
             self.a20_listbox.delete(0, "end")

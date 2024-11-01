@@ -3,6 +3,7 @@ import numpy as np
 import pyaudio
 import time
 
+
 class Source:
     def __init__(self, *args, **kwargs):
         self.audio = pyaudio.PyAudio()
@@ -13,14 +14,15 @@ class Source:
         self.init(*args, **kwargs)
 
     def init(self, *args, **kwargs):
-        raise NotImplementedError('source.init')
+        raise NotImplementedError("source.init")
 
     def callback(self, data, frame_count, time_info, status):
-        raise NotImplementedError('source.callback')
+        raise NotImplementedError("source.callback")
 
 
 SAMPLE_RATE = 44100
 BUFFER_SIZE = 1024
+
 
 class File(Source):
     def init(self, filename):
@@ -31,7 +33,8 @@ class File(Source):
             rate=SAMPLE_RATE,
             output=True,
             frames_per_buffer=BUFFER_SIZE,
-            stream_callback=self.callback)
+            stream_callback=self.callback,
+        )
 
     def callback(self, in_data, frame_count, time_info, status):
         a = self.total
@@ -40,12 +43,13 @@ class File(Source):
         self.total = b
         if len(data) < BUFFER_SIZE:
             # Pad with zeros if data is less than BUFFER_SIZE
-            data = np.pad(data, (0, BUFFER_SIZE - len(data)), 'constant')
+            data = np.pad(data, (0, BUFFER_SIZE - len(data)), "constant")
         if self.total >= len(self.data):
             self.complete = True
         return (data.astype(np.float32).tobytes(), pyaudio.paContinue)
 
-if __name__ == '__main__':
-    filename = 'src/audio/Brent-241006090259.wav'
+
+if __name__ == "__main__":
+    filename = "src/audio/Brent-241006090259.wav"
     source = File(filename)
     time.sleep(20)

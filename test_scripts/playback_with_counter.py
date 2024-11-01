@@ -3,6 +3,7 @@ import subprocess
 import threading
 import time
 
+
 class AudioPlayer:
     def __init__(self, file_path, playhead_slider, time_label):
         self.file_path = file_path
@@ -16,9 +17,18 @@ class AudioPlayer:
 
     def _get_duration(self):
         result = subprocess.run(
-            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-             "-of", "default=noprint_wrappers=1:nokey=1", self.file_path],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                self.file_path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
         return float(result.stdout) if result.stdout else 0
 
@@ -55,7 +65,16 @@ class AudioPlayer:
 
     def _play_from(self, start_time):
         self.process = subprocess.Popen(
-            ["ffplay", "-nodisp", "-autoexit", "-ss", str(start_time), "-loglevel", "error", self.file_path]
+            [
+                "ffplay",
+                "-nodisp",
+                "-autoexit",
+                "-ss",
+                str(start_time),
+                "-loglevel",
+                "error",
+                self.file_path,
+            ]
         )
         self.start_time = time.time() - start_time
         threading.Thread(target=self._update_ui, daemon=True).start()
@@ -68,6 +87,7 @@ class AudioPlayer:
             self.time_label.configure(text=self._format_time(elapsed))
             time.sleep(0.5)
 
+
 # Example usage
 if __name__ == "__main__":
     root = ctk.CTk()
@@ -79,7 +99,9 @@ if __name__ == "__main__":
     playhead_slider = ctk.CTkSlider(root, from_=0, to=100)
     playhead_slider.pack(fill="x", expand=True, pady=20, padx=20)
 
-    player = AudioPlayer("src/audio/Labour Day_Aug11_V1.wav", playhead_slider, time_label)
+    player = AudioPlayer(
+        "src/audio/Labour Day_Aug11_V1.wav", playhead_slider, time_label
+    )
     player.print_duration()
 
     play_button = ctk.CTkButton(root, text="Play", command=player.start)

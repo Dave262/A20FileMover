@@ -2,17 +2,17 @@ import sounddevice as sd
 import soundfile as sf
 import subprocess
 import numpy as np
-from threading import Event, Thread
+from threading import Event
 
-#----------------------------------
+# ----------------------------------
 # Working, but overy complicated
-#----------------------------------
-
+# ----------------------------------
 
 
 # Global variables to hold the subprocess and stop event
 current_song_process = None
 stop_event = Event()
+
 
 def play_audio(file_path):
     global current_song_process
@@ -22,9 +22,19 @@ def play_audio(file_path):
     try:
         # Set up ffmpeg subprocess to convert audio format and stream data
         current_song_process = subprocess.Popen(
-            ["ffmpeg", "-i", file_path, "-loglevel", "panic", "-vn", "-f", "s16le", "pipe:1"],
+            [
+                "ffmpeg",
+                "-i",
+                file_path,
+                "-loglevel",
+                "panic",
+                "-vn",
+                "-f",
+                "s16le",
+                "pipe:1",
+            ],
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE  # Capture stderr for error messages
+            stderr=subprocess.PIPE,  # Capture stderr for error messages
         )
 
         # Check if the subprocess was created successfully
@@ -39,7 +49,9 @@ def play_audio(file_path):
             channels = f.channels
 
         # Create a stream with sounddevice using the specified format
-        with sd.OutputStream(samplerate=samplerate, channels=channels, dtype='int16') as stream:
+        with sd.OutputStream(
+            samplerate=samplerate, channels=channels, dtype="int16"
+        ) as stream:
             # Read and play the audio data in chunks
             while not stop_event.is_set():
                 data = current_song_process.stdout.read(CHUNK)
@@ -55,6 +67,7 @@ def play_audio(file_path):
             current_song_process.terminate()
             current_song_process = None
         print("Playback finished or stopped.")
+
 
 def stop_audio():
     stop_event.set()  # Signal the playback loop to stop

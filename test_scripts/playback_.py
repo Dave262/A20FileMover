@@ -1,20 +1,21 @@
 import subprocess
 import time
 
+
 class AudioPlayer:
     def __init__(self, file_path):
         self.file_path = file_path
         self.process = None
 
-
     def start(self):
         if self.process is None:
             # Start playback using ffplay
-            self.process = subprocess.Popen(["ffplay", "-nodisp", "-autoexit", "-loglevel", "error", self.file_path])
+            self.process = subprocess.Popen(
+                ["ffplay", "-nodisp", "-autoexit", "-loglevel", "error", self.file_path]
+            )
             print("Playback started.")
         else:
             print("Playback already in progress.")
-
 
     def stop(self):
         if self.process:
@@ -25,16 +26,13 @@ class AudioPlayer:
         else:
             print("No playback to stop.")
 
-
     def rewind(self, seconds):
         # Rewinds by restarting playback from an earlier time
         self._seek(-seconds)
 
-
     def fast_forward(self, seconds):
         # Fast-forwards by restarting playback from a later time
         self._seek(seconds)
-
 
     def _seek(self, offset_seconds):
         # To achieve seeking, stop playback, calculate the new starting time, and restart from there
@@ -44,7 +42,18 @@ class AudioPlayer:
         # Calculate the new start time
         seek_time = max(0, offset_seconds)
         # Start playback from the specified seek time
-        self.process = subprocess.Popen(["ffplay", "-nodisp", "-autoexit", "-ss", str(seek_time), "-loglevel", "error", self.file_path])
+        self.process = subprocess.Popen(
+            [
+                "ffplay",
+                "-nodisp",
+                "-autoexit",
+                "-ss",
+                str(seek_time),
+                "-loglevel",
+                "error",
+                self.file_path,
+            ]
+        )
         print(f"Playback started from {seek_time} seconds.")
 
 
