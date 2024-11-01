@@ -4,6 +4,7 @@ import os
 from threading import Thread
 import CTkListbox as lb
 import customtkinter as ctk
+
 from controllers.class_based_files import File
 from controllers.ffplay_playback import AudioPlayer
 from controllers.macos_drive_controller_v2 import FileReport
@@ -11,8 +12,6 @@ from controllers.main_controller_v2 import MainController
 from controllers.wav_info_get import WavInfoGet
 from utils.enums import Colour
 
-# when calling a function from any of the controller modules the syntax wis
-# "self.[_reference to controller as listed in script].function
 
 
 class App(ctk.CTk):
@@ -24,11 +23,6 @@ class App(ctk.CTk):
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
-        # configure the window
-        # self.grid_rowconfigure((0), weight=0)
-        # self.grid_rowconfigure((1), weight=1)
-        # self.grid_columnconfigure((0, 1), weight=0)
-        # self.grid_columnconfigure((2), weight=1)
 
         self.geometry("900x600+2500+100")
         self.minsize(900, 600)
@@ -449,6 +443,7 @@ class App(ctk.CTk):
 
         self.playhead_slider = ctk.CTkSlider(self.play_frame)
         self.playhead_slider.pack(padx=10, pady=10, fill="x")
+
         self.playhead_slider.configure(
             button_color=Colour.PINK.value,
             button_hover_color=Colour.RED.value,

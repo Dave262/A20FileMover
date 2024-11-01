@@ -15,7 +15,6 @@ class AudioPlayer:
         self.timecode_label = timecode_label
         self.current_seek = 0
         self.stop_event = threading.Event()
-
         self.playhead_slider.configure(command=self.seek_from_slider)
 
     def _get_timecode(self):
@@ -98,7 +97,7 @@ class AudioPlayer:
             elapsed = time.time() - self.start_time
             slider_position = (elapsed / self.duration) * 100
             self.playhead_slider.set(min(slider_position, 100))
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def _update_playtime(self):
         print("updating playtime")
@@ -109,7 +108,7 @@ class AudioPlayer:
             self.playtime_label.configure(
                 text=f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
             )
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def _update_timecode(self, creation_time_str):
         start_timecode = datetime.strptime(creation_time_str or "00:00:00", "%H:%M:%S")
@@ -117,7 +116,7 @@ class AudioPlayer:
             elapsed = time.time() - self.start_time
             current_timecode = start_timecode + timedelta(seconds=elapsed)
             self.timecode_label.configure(text=current_timecode.strftime("%H:%M:%S"))
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 # Example usage
 if __name__ == "__main__":
